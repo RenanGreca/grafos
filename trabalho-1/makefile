@@ -1,7 +1,7 @@
 CFLAGS  = -std=c99 \
 	  -pipe \
 	  -ggdb3 -Wstrict-overflow=5 -fstack-protector-all \
-          -W -Wall -Wextra \
+      -W -Wall -Wextra \
 	  -Wbad-function-cast \
 	  -Wcast-align \
 	  -Wcast-qual \
@@ -54,8 +54,8 @@ exemplo : exemplo.c
               $< \
 	      -l cgraph
 
-teste : teste.o grafo.o
-	$(CC) $(CFLAGS) -o $@ $^ -l cgraph
+teste : teste.c grafo.c grafo.h
+	$(CC) $(CFLAGS) -o $@ $^ -I /usr/include/graphviz -l cgraph
 
 emacs24-dep.png : emacs24-dep.dot
 	dot -v -Tpng $< -o $@
