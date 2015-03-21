@@ -54,8 +54,8 @@ exemplo : exemplo.c
               $< \
 	      -l cgraph
 
-teste : teste.c grafo.c grafo.h
-	$(CC) $(CFLAGS) -o $@ $^ -I /usr/include/graphviz -l cgraph
+teste : teste.c grafo.c
+	$(CC) $(CFLAGS) -o $@ $^ -I /usr/include/graphviz -l cgraph 
 
 emacs24-dep.png : emacs24-dep.dot
 	dot -v -Tpng $< -o $@

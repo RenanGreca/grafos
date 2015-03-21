@@ -36,16 +36,16 @@ typedef struct grafo *grafo;
 
 grafo init_grafo(void);
 
-vertice init_vertices(int num_vertices);
+vertice *init_vertices(int num_vertices);
 
-aresta init_arestas(int num_arestas);
+aresta *init_arestas(int num_arestas);
 
 /*
    aresta adiciona_aresta(aresta aresta, int num_arestas
         double peso, vertice head, vertice tail);
 */
 
-aresta busca_aresta(aresta arestas, int num_arestas, Agedge_t *a);
+aresta busca_aresta(aresta *arestas, int num_arestas, aresta a);
 
 grafo le_grafo(FILE *input);  
 
