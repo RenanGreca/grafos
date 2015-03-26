@@ -15,7 +15,7 @@
 // 
 // o peso default de uma aresta é 0.0
 
-#define TAM_NOME 128
+#define TAM_NOME 56
 
 typedef struct vertice *vertice;
 typedef struct aresta *aresta;
@@ -40,12 +40,13 @@ vertice *init_vertices(int num_vertices);
 
 aresta *init_arestas(int num_arestas);
 
+void imprime_vertices(vertice *v, int num_vertices);
 /*
    aresta adiciona_aresta(aresta aresta, int num_arestas
         double peso, vertice head, vertice tail);
 */
 
-aresta busca_aresta(aresta *arestas, int num_arestas, aresta a);
+aresta busca_aresta(aresta *arestas, int num_arestas, double peso, char *nome_head, char *nome_tail);
 
 grafo le_grafo(FILE *input);  
 

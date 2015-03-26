@@ -1,24 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <cgraph.h>
 #include "grafo.h"
-
-//------------------------------------------------------------------------------
-// estrutura de dados para representar um grafo simples
-// 
-// o grafo pode ser
-// - direcionado ou não
-// - com pesos nas arestas ou não
-// 
-// além dos vértices e arestas, o grafo tem um nome
-// 
-// os vértices do grafo também tem nome
-// 
-// os nomes do grafo e dos vértices são strings quaisquer
-// 
-// num grafo com pesos nas arestas todas as arestas tem peso, que é um double
-// 
-// o peso default de uma aresta é 0.0
 
 struct vertice {
     char nome[TAM_NOME];
@@ -43,73 +27,52 @@ struct grafo {
     char nome[TAM_NOME];
 };
 
-//------------------------------------------------------------------------------
-// lê um grafo no formato dot de input, usando as rotinas de libcgraph
-// 
-// desconsidera todos os atributos do grafo lido
-// exceto o atributo "peso" nas arestas onde ocorra
-// 
-// num grafo com pesos nas arestas todas as arestas tem peso, que é um double
-// 
-// o peso default de uma aresta num grafo com pesos é 0.0
-// 
-// devolve o grafo lido ou
-//         NULL em caso de erro 
-
 grafo init_grafo(void) {
- 	   
-   	printf("Iniciando Grafo\n");	 
-    grafo g = (grafo) malloc (sizeof(struct grafo));
-    
-    g->vertices = NULL; 
-    g->arestas = NULL; 
+
+    grafo g = (grafo) malloc ((size_t) sizeof(struct grafo));
+    g->vertices = NULL;
+    g->arestas = NULL;
+    g->direcionado = 0;
     g->num_vertices = 0;
     g->num_arestas = 0;
     g->nome[0] = '\0';
-
-   	printf("Iniciou Grafo\n");	 
-    return g;   
+    return g;
 }
 
 vertice *init_vertices(int num_vertices) {
+    
+    vertice *v = (vertice *) malloc ( (size_t) num_vertices * sizeof(vertice));
+    v[0] = (vertice) malloc ( (size_t) num_vertices * sizeof(struct vertice));
 
-   	printf("Iniciando Vertices\n");	 
-//    vertice *v = (vertice *) malloc ( (size_t) num_vertices * sizeof(vertice));
-	vertice v = (vertice) malloc ( (size_t) num_vertices * sizeof(struct vertice));
-/*	for (int i=1; i<num_vertices; i++) {
-		v[i] = v[i-1] +	sizeof(struct vertice);
-	}
-*/
+    for (int i=1; i<num_vertices ; i++)
+        v[i] = v[i-1] + 1;
+
     for (int i=0; i<num_vertices; i++) {
-        strcpy(v[i].nome, "Vertice Nulo");
-        printf("%s\n",v[i].nome);
-        v[i].arestas = NULL;
+        v[i]->nome[0]='\0';
+        v[i]->arestas = NULL;
     }
 
-   	printf("Iniciou Vertices\n");	 
-    vertice *pv = &v;
-    return pv;
+    return v;
 }
+
 
 aresta *init_arestas(int num_arestas) {
     
-   	printf("Iniciando Arestas\n");	 
-   // aresta *a = (aresta *) malloc ( (size_t) num_arestas * sizeof(aresta));
-    aresta a = (aresta) malloc ( (size_t) num_arestas * sizeof(struct aresta));
-/*	for (int i=1; i<num_arestas; i++) {
-		a[i] = a[i-1] +	sizeof(struct aresta);
-	}
-  */  
-    for (int i=0; i<num_arestas; ++i) {
-        a[i].peso = 0.0;
-        a[i].head = NULL;
-        a[i].tail = NULL;
+    aresta *a = (aresta *) malloc ( (size_t) num_arestas * sizeof(aresta));
+    a[0] = (aresta) malloc ( (size_t) num_arestas * sizeof(struct aresta));
+
+    for (int i=1; i<num_arestas ; i++)
+        a[i] = a[i-1] + 1;
+
+    for (int i=0; i<num_arestas; i++) {
+        a[i]->peso = 0.0;
+        a[i]->tail = NULL;
+        a[i]->head = NULL;
     }
 
-   	printf("Iniciou Arestas\n");	 
-    aresta *pa = &a;
-    return pa;
+    return a;
 }
+
 /*
 aresta adiciona_aresta(aresta arestas, int num_arestas, 
         double peso, vertice head, vertice head) {
@@ -123,75 +86,99 @@ aresta adiciona_aresta(aresta arestas, int num_arestas,
 }
 */
 
-aresta busca_aresta(aresta *arestas, int num_arestas, aresta a) {
-   printf("Buscando\n");	 
+aresta busca_aresta(aresta *arestas, int num_arestas, double peso, 
+        char *nome_head, char *nome_tail) {
+  
+    printf("Buscando\n");	 
     for (int i=0; i<num_arestas; i++) {
         
         // Assume que entre dois vértices só pode haver uma aresta
         // Precisa checar head com tail e vice-versa?
-        if ( (a->head  == arestas[i]->head) &&
-                (a->tail == arestas[i]->tail) &&
+        if ( (( (strcmp( nome_head, arestas[i]->head->nome) &&
+                strcmp( nome_tail, arestas[i]->tail->nome) ) ||
+                (strcmp( nome_head, arestas[i]->tail->nome) &&
+                strcmp( nome_tail, arestas[i]->tail->nome)) ) &&
                 //Warning. Comparando floats
-                (a->peso == arestas[i]->peso) ) {
+                (peso == arestas[i]->peso)) ) {
        
    			printf("Achou\n");	 
             return arestas[i];  
         }
     }
     
-   	printf("Achou\n");	 
+   	printf("Não Achou\n");	 
     return NULL;    
 }
+
+void imprime_vertices (vertice *v, int num_vertices) {
+    
+    for (int i=0; i<num_vertices; i++) {
+        printf("\"%s\"\n", v[i]->nome);
+    }
+}
+
 
 grafo le_grafo(FILE *input) {
  
 	printf("Lendo\n");
     Agraph_t *graf = agread(input, NULL);
     
-    grafo g = init_grafo();
+    grafo g = NULL;
+    g = init_grafo();
 
     g->direcionado = agisdirected(graf);
     g->num_vertices = agnnodes(graf);    
-    g->num_arestas = agnedges(graf);    
-
-    g->arestas = init_arestas(g->num_arestas);
+    
     g->vertices = init_vertices(g->num_vertices);
+    g->arestas = init_arestas(agnedges(graf));
 
-    for (int i=0; i<g->num_vertices; i++) printf("%s\n",g->vertices[i]->nome);
+//    imprime_vertices(g->vertices,g->num_vertices);
+        
     // Copia de Agraph_t
     //aresta *ptr_ag = g->arestas;
     //aresta *ptr_agn = NULL;
     //vertice *ptr_v = g->vertices;
     //aresta tmp_aresta = (aresta) malloc (sizeof(aresta));
+  
+  
     int i,j,k;
     i = j = k = 0;
     for (Agnode_t *v=agfstnode(graf); v; v=agnxtnode(graf,v)) {
-        printf("Copiando i %d\n",i);
-        printf("g %p gv[i] %p g.v[i].n %p \n", g->vertices[i]->nome,g->vertices[i],g);        
-        printf("%s\n", g->vertices[i]->nome);        
+        
+        g->vertices[i]->arestas = (aresta *) malloc (
+                (size_t)agdegree(graf,v,1,1)*sizeof(aresta));
+        
         strcpy(g->vertices[i]->nome, agnameof(v));        
-        printf("%s\n", agnameof(v));        
-     /*  
-        j=1;
+        // printf("\"%s\"\n", g->vertices[i]->nome);        
+        
+        j=0;
+        aresta tmp_a = NULL;
         for (Agedge_t *a=agfstedge(graf,v); a; a=agnxtedge(graf,a,v)) {
-            g.vertices[i].arestas = (aresta *) realloc(g.vertices[i].arestas, 
-                                                         j*sizeof(aresta));
-			tmp_aresta.peso = agget(a, (char *) "peso");
-			tmp_aresta.head = g.vertices[i]; 
-			tmp_aresta.tail = NULL; 
-            if ( (g.arestas[k] = busca_aresta(g->arestas, g->num_arestas, tmp_aresta)) ) {
-                g.vertices[i].aresta[j].peso = agget(a, (char *) "peso");
-                g.vertices[i].aresta[j].head = g.vertices[i]; 
-                g.vertices[i].arestas[j]=g.arestas[i];      
-            }               
-            k++;   
-            g.arestas[k]->tail = g.vertices[i];
-            
+        //    g.vertices[i].arestas = (aresta *) realloc(g.vertices[i].arestas, 
+        //                                               j*sizeof(aresta));
+		    //printf("%f\n",g->vertices[i]->arestas[j]->peso);
+            if ( ( tmp_a = busca_aresta(g->arestas, g->num_arestas, 
+                    atof( agget(a, "peso") ), 
+                    agnameof(aghead(a)), agnameof(agtail(a)) )))
+            {
+                tmp_a->tail = g->vertices[i];
+                g->vertices[i]->arestas[j] = tmp_a;              
+            }
+            else {
+                g->arestas[k]->peso = atof(agget(a,"peso"));
+                g->arestas[k]->head = g->vertices[i];
+                g->vertices[i]->arestas[j] = g->arestas[k];              
+                k++;
+                g->num_arestas = k;
+            }
+
+            j++;
         }
-        */
+        
         i++;
     }
-	
+
+    free (graf);    
 	printf("Leu\n");
 	return g;	
    
@@ -202,17 +189,15 @@ grafo le_grafo(FILE *input) {
 // devolve 1 em caso de sucesso ou
 //         0 em caso de erro
 
-int destroi_grafo(grafo g) {
-	printf("Desalocando\n");
-	// Falta desalocar as arestas de cada vértice 
-//	free(g->vertices[0]);
-//	free(g->vertices);
-//	free(g->arestas[0]);
-//	free(g->arestas);
-	free(g);
-	printf("Desalocou\n");
-	return 0;
+int destroi_grafo(grafo g){
+    free(g->vertices[0]);
+    free(g->vertices);
+    free(g->arestas[0]);
+    free(g->arestas);
+    free(g);
+    return 0;
 }
+
 //------------------------------------------------------------------------------
 // escreve o grafo g em output usando o formato dot, de forma que
 // 
