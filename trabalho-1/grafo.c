@@ -94,6 +94,13 @@ aresta busca_aresta(aresta *arestas, int num_arestas, double peso,
         
         // Assume que entre dois vértices só pode haver uma aresta
         // Precisa checar head com tail e vice-versa?
+       
+        printf("a %d peso %f head %s tail%s\n", i, arestas[i]->peso, 
+                arestas[i]->head->nome , arestas[i]->tail->nome);
+
+        if ( (arestas[i]->head == NULL) || (arestas[i]->tail == NULL) )
+            return NULL;
+
         if ( (( (strcmp( nome_head, arestas[i]->head->nome) &&
                 strcmp( nome_tail, arestas[i]->tail->nome) ) ||
                 (strcmp( nome_head, arestas[i]->tail->nome) &&
@@ -143,12 +150,17 @@ grafo le_grafo(FILE *input) {
   
     int i,j,k;
     i = j = k = 0;
+
+    for (Agnode_t *v=agfstnode(graf); v; v=agnxtnode(graf,v)) {
+        strcpy(g->vertices[i]->nome, agnameof(v));        
+    }
+    
     for (Agnode_t *v=agfstnode(graf); v; v=agnxtnode(graf,v)) {
         
         g->vertices[i]->arestas = (aresta *) malloc (
                 (size_t)agdegree(graf,v,1,1)*sizeof(aresta));
         
-        strcpy(g->vertices[i]->nome, agnameof(v));        
+        //strcpy(g->vertices[i]->nome, agnameof(v));        
         // printf("\"%s\"\n", g->vertices[i]->nome);        
         
         j=0;
@@ -157,6 +169,9 @@ grafo le_grafo(FILE *input) {
         //    g.vertices[i].arestas = (aresta *) realloc(g.vertices[i].arestas, 
         //                                               j*sizeof(aresta));
 		    //printf("%f\n",g->vertices[i]->arestas[j]->peso);
+            printf("vertice %d agedge %d peso %f head %s tail %s\n",i,j,
+                    atof(agget(a,"peso")), agnameof(aghead(a)), agnameof(agtail(a)) );
+
             if ( ( tmp_a = busca_aresta(g->arestas, g->num_arestas, 
                     atof( agget(a, "peso") ), 
                     agnameof(aghead(a)), agnameof(agtail(a)) )))
