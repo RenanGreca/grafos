@@ -89,17 +89,13 @@ aresta adiciona_aresta(aresta arestas, int num_arestas,
 aresta busca_aresta(aresta *arestas, int num_arestas, double peso, 
         char *nome_head, char *nome_tail) {
   
-    printf("Buscando\n");	 
     for (int i=0; i<num_arestas; i++) {
         
         // Assume que entre dois vértices só pode haver uma aresta
         // Precisa checar head com tail e vice-versa?
        
-        printf("a %d peso %f head %s tail%s\n", i, arestas[i]->peso, 
+        printf("\ta %d peso %f head %s tail%s\n", i, arestas[i]->peso, 
                 arestas[i]->head->nome , arestas[i]->tail->nome);
-
-        if ( (arestas[i]->head == NULL) || (arestas[i]->tail == NULL) )
-            return NULL;
 
         if ( (( (strcmp( nome_head, arestas[i]->head->nome) &&
                 strcmp( nome_tail, arestas[i]->tail->nome) ) ||
@@ -108,12 +104,10 @@ aresta busca_aresta(aresta *arestas, int num_arestas, double peso,
                 //Warning. Comparando floats
                 (peso == arestas[i]->peso)) ) {
        
-   			printf("Achou\n");	 
             return arestas[i];  
         }
     }
     
-   	printf("Não Achou\n");	 
     return NULL;    
 }
 
@@ -139,15 +133,10 @@ grafo le_grafo(FILE *input) {
     g->vertices = init_vertices(g->num_vertices);
     g->arestas = init_arestas(agnedges(graf));
 
-//    imprime_vertices(g->vertices,g->num_vertices);
+    // imprime_vertices(g->vertices,g->num_vertices);
         
     // Copia de Agraph_t
-    //aresta *ptr_ag = g->arestas;
-    //aresta *ptr_agn = NULL;
-    //vertice *ptr_v = g->vertices;
-    //aresta tmp_aresta = (aresta) malloc (sizeof(aresta));
-  
-  
+    
     int i,j,k;
     i = j = k = 0;
 
@@ -160,15 +149,14 @@ grafo le_grafo(FILE *input) {
         g->vertices[i]->arestas = (aresta *) malloc (
                 (size_t)agdegree(graf,v,1,1)*sizeof(aresta));
         
-        //strcpy(g->vertices[i]->nome, agnameof(v));        
-        // printf("\"%s\"\n", g->vertices[i]->nome);        
+        strcpy(g->vertices[i]->nome, agnameof(v));        
+        printf("\"%s\"\n", g->vertices[i]->nome);        
         
         j=0;
         aresta tmp_a = NULL;
         for (Agedge_t *a=agfstedge(graf,v); a; a=agnxtedge(graf,a,v)) {
-        //    g.vertices[i].arestas = (aresta *) realloc(g.vertices[i].arestas, 
-        //                                               j*sizeof(aresta));
-		    //printf("%f\n",g->vertices[i]->arestas[j]->peso);
+		    
+            //printf("%f\n",g->vertices[i]->arestas[j]->peso);
             printf("vertice %d agedge %d peso %f head %s tail %s\n",i,j,
                     atof(agget(a,"peso")), agnameof(aghead(a)), agnameof(agtail(a)) );
 
@@ -176,12 +164,24 @@ grafo le_grafo(FILE *input) {
                     atof( agget(a, "peso") ), 
                     agnameof(aghead(a)), agnameof(agtail(a)) )))
             {
-                tmp_a->tail = g->vertices[i];
+                printf("Achou\n");
+                if ( strcmp(g->vertices[i]->nome, agnameof(aghead(a))) ) 
+                    tmp_a->head = g->vertices[i];
+                else
+                    tmp_a->tail = g->vertices[i];
+
                 g->vertices[i]->arestas[j] = tmp_a;              
             }
             else {
+                printf("Nao Achou\n");
                 g->arestas[k]->peso = atof(agget(a,"peso"));
-                g->arestas[k]->head = g->vertices[i];
+              
+                printf("%s\n",g->vertices[i]->nome);  
+                if ( strcmp(g->vertices[i]->nome, agnameof(aghead(a))) ) 
+                    g->arestas[k]->head = g->vertices[i];
+                else    
+                    g->arestas[k]->tail = g->vertices[i];
+               
                 g->vertices[i]->arestas[j] = g->arestas[k];              
                 k++;
                 g->num_arestas = k;
