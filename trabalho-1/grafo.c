@@ -120,7 +120,7 @@ void imprime_vertices (vertice *v, int num_vertices) {
 
 
 grafo le_grafo(FILE *input) {
- 
+
 	printf("Lendo\n");
     Agraph_t *graf = agread(input, NULL);
     
@@ -133,6 +133,8 @@ grafo le_grafo(FILE *input) {
     g->vertices = init_vertices(g->num_vertices);
     g->arestas = init_arestas(agnedges(graf));
 
+    strcpy(g->nome, "meu grafo");
+
     // imprime_vertices(g->vertices,g->num_vertices);
         
     // Copia de Agraph_t
@@ -141,7 +143,8 @@ grafo le_grafo(FILE *input) {
     i = j = k = 0;
 
     for (Agnode_t *v=agfstnode(graf); v; v=agnxtnode(graf,v)) {
-        strcpy(g->vertices[i]->nome, agnameof(v));        
+        strcpy(g->vertices[i]->nome, agnameof(v));   
+        i++;     
     }
     
     for (Agnode_t *v=agfstnode(graf); v; v=agnxtnode(graf,v)) {
@@ -196,7 +199,6 @@ grafo le_grafo(FILE *input) {
     free (graf);    
 	printf("Leu\n");
 	return g;	
-   
 }
 //------------------------------------------------------------------------------
 // desaloca toda a memória utilizada em g
@@ -222,10 +224,61 @@ int destroi_grafo(grafo g){
 // devolve o grafo escrito ou
 //         NULL em caso de erro 
 
+void escreve_vertices(vertice *vertices, int n_vertices) {
+    
+    if (!n_vertices) {
+        return;
+    }
+
+    for (int i=0; i<n_vertices; i++) {
+        printf("    \"%s\"\n", vertices[i]->nome);
+    }
+}
+
+void escreve_arestas(aresta *arestas, int n_arestas, int direcionado) {
+    char rep_aresta = direcionado ? '>' : '--';
+
+    for (int i=0; i<n_arestas; i++) {
+        double peso = arestas[i]->peso;
+        
+        printf("    \"%s\" -%c \"%s\"",
+                arestas[i]->head->nome,
+                rep_aresta,
+                arestas[i]->tail->nome
+        );
+
+        if ( peso )
+          printf(" [peso=%.2lf]", peso);
+
+        printf("\n");
+    }
+}
+
 grafo escreve_grafo(FILE *output, grafo g) {
-	printf("Escrevendo\n");
+	if (!g) {
+        return NULL;
+    }
+    printf("Escrevendo\n");
+    //printf("Num vertices: %d\n", g->num_vertices);
+    //printf("Num arestas: %d\n", g->num_arestas);
+
+    /*direcionado = g->direcionado;
+    n_vertices = g->num_vertices;
+    n_arestas = g->num_arestas;
+
+    arestas = g->arestas;*/
+
+    printf("strict %sgraph \"%s\" {\n\n",
+      g->direcionado ? "di" : "",
+      g->nome
+    );
+
+    escreve_vertices(g->vertices, g->num_vertices);
+    printf("\n");
+    escreve_arestas(g->arestas, g->num_arestas, g->direcionado);
+    printf("}\n");
+
  	fprintf(output, "Fim\n");
 	printf("Escreveu\n");
 	return g; 
 }
-
