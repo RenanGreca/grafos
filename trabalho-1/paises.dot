@@ -22,7 +22,7 @@ strict graph "mapa-mundi" {
     Algeria -- Morocco
     Algeria -- Niger
     Algeria -- Tunisia
-    Algeria -- Western Sahara
+    Algeria -- "Western Sahara"
     Andorra -- France
     Andorra -- Spain
     Angola -- "Democratic Republic of the Congo"
