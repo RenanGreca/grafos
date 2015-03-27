@@ -66,4 +66,8 @@ int destroi_grafo(grafo g);
 // devolve o grafo escrito ou
 //         NULL em caso de erro 
 
+void escreve_vertices(vertice *vertices, int n_vertices);
+
+void escreve_arestas(aresta *arestas, int n_arestas, int direcionado);
+
 grafo escreve_grafo(FILE *output, grafo g);
