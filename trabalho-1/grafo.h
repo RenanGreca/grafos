@@ -46,7 +46,7 @@ void imprime_vertices(vertice *v, int num_vertices);
         double peso, vertice head, vertice tail);
 */
 
-aresta busca_aresta(aresta *arestas, int num_arestas, double peso, char *nome_head, char *nome_tail);
+int busca_aresta(aresta *arestas, int num_arestas, double peso, char *nome_head, char *nome_tail);
 
 grafo le_grafo(FILE *input);  
 

@@ -248,7 +248,7 @@ void escreve_vertices(vertice *vertices, int n_vertices) {
 }
 
 void escreve_arestas(aresta *arestas, int n_arestas, int direcionado) {
-    char rep_aresta = direcionado ? '>' : '--';
+    char rep_aresta = direcionado ? '>' : '-';
 
     for (int i=0; i<n_arestas; i++) {
         double peso = arestas[i]->peso;
