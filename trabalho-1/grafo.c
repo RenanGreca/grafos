@@ -15,15 +15,12 @@ struct vertice {
     aresta *arestas;
 };
 
-// Armazena espaço para peso da aresta mesmo que não tenha.
-// Possível melhorar. Talvez com Unions
 struct aresta {
     double peso;
     vertice head;
     vertice tail;
 };
 
-// Warning fix padding
 struct grafo {
     vertice *vertices;
     aresta *arestas;
@@ -37,6 +34,10 @@ struct grafo {
 grafo init_grafo(void) {
 
     grafo g = (grafo) malloc ((size_t) sizeof(struct grafo));
+    
+    if (!g)
+        return NULL;
+    
     g->vertices = NULL;
     g->arestas = NULL;
     g->direcionado = 0;
@@ -44,16 +45,25 @@ grafo init_grafo(void) {
     g->num_arestas = 0;
     g->arestas_tem_peso = 0;
     g->nome[0] = '\0';
+
     return g;
 }
 
 vertice *init_vertices(int num_vertices) {
     
     vertice *v = (vertice *) malloc ( (size_t) num_vertices * sizeof(vertice));
+   
+    if(!v)
+        return NULL;
+
     v[0] = (vertice) malloc ( (size_t) num_vertices * sizeof(struct vertice));
 
-    for (int i=1; i<num_vertices ; i++)
+    if (!v[0])
+        return NULL;
+
+    for (int i=1; i<num_vertices ; i++) {
         v[i] = v[i-1] + 1;
+    }
 
     for (int i=0; i<num_vertices; i++) {
         v[i]->nome[0]='\0';
@@ -67,10 +77,18 @@ vertice *init_vertices(int num_vertices) {
 aresta *init_arestas(int num_arestas) {
     
     aresta *a = (aresta *) malloc ( (size_t) num_arestas * sizeof(aresta));
-    a[0] = (aresta) malloc ( (size_t) num_arestas * sizeof(struct aresta));
 
-    for (int i=1; i<num_arestas ; i++)
+    if (!a)
+        return NULL;
+
+    a[0] = (aresta) malloc ( (size_t) num_arestas * sizeof(struct aresta));
+    
+    if (!a[0])
+        return NULL;
+
+    for (int i=1; i<num_arestas ; i++) {
         a[i] = a[i-1] + 1;
+    }
 
     for (int i=0; i<num_arestas; i++) {
         a[i]->peso = 0.0;
@@ -83,11 +101,15 @@ aresta *init_arestas(int num_arestas) {
 
 
 int busca_vertice(vertice *vertices, int num_vertices, char * nome) {
+
     for (int i=0; i<num_vertices; i++) {
+
         if (!strcmp(nome, vertices[i]->nome)) {
+
             return i;
         }
     }
+
     return -1;
 }
 
@@ -100,13 +122,13 @@ int busca_aresta(aresta *arestas, int num_arestas, char *nome_head, char *nome_t
 //                arestas[i]->head->nome , arestas[i]->tail->nome);
         //printf("%d\n", (arestas[i]->head== NULL));
 		if (arestas[i]->head== NULL) {
-			//printf("Cabeça nula\n");
+   
             return -1;
 		}
 
         //printf("%d\n", (arestas[i]->tail== NULL));
 		if (arestas[i]->tail== NULL) {
-            //printf("Rabo nula\n");
+   
             return -1;
 		}
 
@@ -114,18 +136,19 @@ int busca_aresta(aresta *arestas, int num_arestas, char *nome_head, char *nome_t
         //printf("%s %s\n", nome_head, nome_tail);
         if (    !strcmp( nome_head, arestas[i]->head->nome) &&
                 !strcmp( nome_tail, arestas[i]->tail->nome) ) {
-            //printf("Achou!\n");
+   
             return i;  
         }
 
     }
-    //printf("Não achou\n");
-	return -1;
+	
+    return -1;
 }
 
 void imprime_vertices (vertice *v, int num_vertices) {
     
     for (int i=0; i<num_vertices; i++) {
+
         printf("\"%s\"\n", v[i]->nome);
     }
 }
@@ -140,18 +163,17 @@ grafo le_grafo(FILE *input) {
 
     g->direcionado = agisdirected(graf);
     g->num_vertices = agnnodes(graf);    
+    g->num_arestas = agnedges(graf);    
     
     g->vertices = init_vertices(g->num_vertices);
-    g->arestas = init_arestas(agnedges(graf));
+    g->arestas = init_arestas(g->num_arestas);
 
     strcpy(g->nome, agnameof(graf));
 
     // imprime_vertices(g->vertices,g->num_vertices);
-        
-    // Copia de Agraph_t
-    char *buffer; 
-    int i,j,k,l;
-    i = j = k = l = 0;
+  
+    // Copia vértices    
+    int i = 0;
     for (Agnode_t *v=agfstnode(graf); v; v=agnxtnode(graf,v)) {
         g->vertices[i]->arestas = (aresta *) malloc (
                 (size_t)agdegree(graf,v,1,1)*sizeof(aresta));
@@ -160,14 +182,13 @@ grafo le_grafo(FILE *input) {
         i++;
     }
 
-    i=0;
-    
+    // Copia Arestas
+    char *buffer; 
+    int j, k, l, v_pos;
+    i = j = k = l = 0;
+
     for (Agnode_t *v=agfstnode(graf); v; v=agnxtnode(graf,v)) {
         
-        //g->vertices[i]->arestas = (aresta *) malloc (
-        //        (size_t)agdegree(graf,v,1,1)*sizeof(aresta));
-        
-        //strcpy(g->vertices[i]->nome, agnameof(v));       
         //printf("\"%s\"\n", g->vertices[i]->nome);        
         
         j=0;
@@ -177,29 +198,35 @@ grafo le_grafo(FILE *input) {
             //        atof(agget(a,strdup("peso"))), agnameof(aghead(a)), agnameof(agtail(a)) );
             //printf("%f\n",g->vertices[i]->arestas[j]->peso);
 
-            if ( busca_aresta(g->arestas, g->num_arestas, 
-                    agnameof(aghead(a)), agnameof(agtail(a)) ) < 0 ) {
+            if ( busca_aresta(g->arestas, k, agnameof(aghead(a)), agnameof(agtail(a)) ) < 0 ) {
 
-                //printf("Nova aresta\n");
                 if ( !strcmp(g->vertices[i]->nome, agnameof(aghead(a))) ) {
+                    
                     g->arestas[k]->head = g->vertices[i];
 
-                    int v_pos = busca_vertice(g->vertices, g->num_vertices, agnameof(agtail(a)));
+                    v_pos = busca_vertice(g->vertices, g->num_vertices, agnameof(agtail(a)));
+                    
                     if (v_pos < 0 ) {
-                        //printf("Erro ao encontrar vértice rabo\n");
+                        
                         return NULL;
                     }
+                    
                     g->arestas[k]->tail = g->vertices[v_pos];
+                
                 } else {
+                 
                     g->arestas[k]->tail = g->vertices[i];
 
-                    int v_pos = busca_vertice(g->vertices, g->num_vertices, agnameof(aghead(a)));
+                    v_pos = busca_vertice(g->vertices, g->num_vertices, agnameof(aghead(a)));
+                  
                     if (v_pos < 0 ) {
-                        //printf("Erro ao encontrar vértice cabeça\n");
+
                         return NULL;
                     }
+
                     g->arestas[k]->head = g->vertices[v_pos];
                 }
+               
                 //printf("%p\n",agget(a,strdup("peso")));
                 
                 if ( (buffer = agget(a,strdup("peso")) ) ) { 
@@ -209,36 +236,7 @@ grafo le_grafo(FILE *input) {
                 }
                 
                 k++;
-                g->num_arestas = k;
             }
-
-            /*if ( ( l = busca_aresta(g->arestas, g->num_arestas, 
-                    atof( agget(a, strdup("peso")) ), 
-                    agnameof(aghead(a)), agnameof(agtail(a)) )))
-            {
-                printf("Achou\n");
-                if ( !strcmp(g->vertices[i]->nome, agnameof(aghead(a))) ) 
-                    g->arestas[k]->head = g->vertices[i];
-                else
-                    g->arestas[k]->tail = g->vertices[i];
-
-                g->vertices[i]->arestas[j] = g->arestas[l];              
-            }
-            else {
-                printf("Nao Achou\n");
-                printf("%p %p %f\n\n", g->arestas[k], &g->arestas[k]->peso, atof(agget(a,strdup("peso"))));
-                g->arestas[k]->peso = atof(agget(a,strdup("peso")));
-              
-                printf("%s\n",g->vertices[i]->nome);  
-                if ( !strcmp(g->vertices[i]->nome, agnameof(aghead(a))) ) 
-                    g->arestas[k]->head = g->vertices[i];
-                else    
-                    g->arestas[k]->tail = g->vertices[i];
-               
-                g->vertices[i]->arestas[j] = g->arestas[k];              
-                k++;
-                g->num_arestas = k;
-            }*/
 
             j++;
         }
@@ -247,8 +245,8 @@ grafo le_grafo(FILE *input) {
     }
 
     free (graf);    
-	return g;	
 
+	return g;	
 }
 //------------------------------------------------------------------------------
 // desaloca toda a memória utilizada em g
@@ -282,17 +280,19 @@ int destroi_grafo(grafo g){
 void escreve_vertices(vertice *vertices, int n_vertices, FILE *output) {
     
     if (!n_vertices) {
+
         return;
     }
 
     for (int i=0; i<n_vertices; i++) {
+
         fprintf(output, "    \"%s\"\n", vertices[i]->nome);
     }
 }
 
 void escreve_arestas(aresta *arestas, int n_arestas, int direcionado, int tem_peso, FILE *output) {
-    char rep_aresta = direcionado ? '>' : '-';
 
+    char rep_aresta = direcionado ? '>' : '-';
     double peso;
 
     for (int i=0; i<n_arestas; i++) {
@@ -332,7 +332,8 @@ grafo escreve_grafo(FILE *output, grafo g) {
     );
 
     escreve_vertices(g->vertices, g->num_vertices, output);
-    fprintf(output, "\n");
+    fputc('\n', output);
+    
     escreve_arestas(g->arestas, g->num_arestas, g->direcionado, g->arestas_tem_peso, output);
     fprintf(output, "}\n");
 
