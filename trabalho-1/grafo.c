@@ -31,6 +31,8 @@ struct grafo {
     char nome[TAM_NOME];
 };
 
+int copia_arestas(Agedge_t *a, grafo g, int i, int num_arestas_visitadas);
+
 grafo init_grafo(void) {
 
     grafo g = (grafo) malloc ((size_t) sizeof(struct grafo));
@@ -154,6 +156,55 @@ void imprime_vertices (vertice *v, int num_vertices) {
 }
 
 
+int copia_arestas(Agedge_t *a, grafo g, int i, int num_arestas_visitadas) {
+    
+    char *buffer; 
+    int v_pos;
+
+    if ( busca_aresta(g->arestas, num_arestas_visitadas, agnameof(aghead(a)), 
+                agnameof(agtail(a)) ) < 0 ) {
+
+        if ( !strcmp(g->vertices[i]->nome, agnameof(aghead(a))) ) {
+            
+            g->arestas[num_arestas_visitadas]->head = g->vertices[i];
+
+            v_pos = busca_vertice(g->vertices, g->num_vertices, agnameof(agtail(a)));
+            
+            if (v_pos < 0 ) {
+                
+                return -1;
+            }
+            
+            g->arestas[num_arestas_visitadas]->tail = g->vertices[v_pos];
+        
+        } else {
+         
+            g->arestas[num_arestas_visitadas]->tail = g->vertices[i];
+
+            v_pos = busca_vertice(g->vertices, g->num_vertices, agnameof(aghead(a)));
+          
+            if (v_pos < 0 ) {
+
+                return -1;
+            }
+
+            g->arestas[num_arestas_visitadas]->head = g->vertices[v_pos];
+        }
+       
+        //printf("%p\n",agget(a,strdup("peso")));
+        
+        if ( (buffer = agget(a,strdup("peso")) ) ) { 
+          
+            g->arestas_tem_peso = 1; 
+            g->arestas[num_arestas_visitadas]->peso = atof(buffer);
+        }
+        
+        num_arestas_visitadas++;
+    }
+
+    return num_arestas_visitadas;
+}
+
 grafo le_grafo(FILE *input) {
 
     Agraph_t *graf = agread(input, NULL);
@@ -183,71 +234,44 @@ grafo le_grafo(FILE *input) {
     }
 
     // Copia Arestas
-    char *buffer; 
-    int j, k, l, v_pos;
-    i = j = k = l = 0;
+    int num_arestas_visitadas;
+    i = num_arestas_visitadas = 0;
 
-    for (Agnode_t *v=agfstnode(graf); v; v=agnxtnode(graf,v)) {
+    for (Agnode_t *v=agfstnode(graf); v; v=agnxtnode(graf,v), ++i) {
         
         //printf("\"%s\"\n", g->vertices[i]->nome);        
         
-        j=0;
-		for (Agedge_t *a=agfstedge(graf,v); a; a=agnxtedge(graf,a,v)) {
-		    
-            //printf("vertice %d agedge %d peso %f head %s tail %s\n",i,j,
-            //        atof(agget(a,strdup("peso"))), agnameof(aghead(a)), agnameof(agtail(a)) );
-            //printf("%f\n",g->vertices[i]->arestas[j]->peso);
-
-            if ( busca_aresta(g->arestas, k, agnameof(aghead(a)), agnameof(agtail(a)) ) < 0 ) {
-
-                if ( !strcmp(g->vertices[i]->nome, agnameof(aghead(a))) ) {
-                    
-                    g->arestas[k]->head = g->vertices[i];
-
-                    v_pos = busca_vertice(g->vertices, g->num_vertices, agnameof(agtail(a)));
-                    
-                    if (v_pos < 0 ) {
-                        
-                        return NULL;
-                    }
-                    
-                    g->arestas[k]->tail = g->vertices[v_pos];
+        if (g->direcionado) {
+       
+            for (Agedge_t *a=agfstout(graf,v); a; a=agnxtout(graf,a)) {
                 
-                } else {
-                 
-                    g->arestas[k]->tail = g->vertices[i];
+                num_arestas_visitadas = copia_arestas(a, g, i, num_arestas_visitadas);
 
-                    v_pos = busca_vertice(g->vertices, g->num_vertices, agnameof(aghead(a)));
-                  
-                    if (v_pos < 0 ) {
-
-                        return NULL;
-                    }
-
-                    g->arestas[k]->head = g->vertices[v_pos];
-                }
-               
-                //printf("%p\n",agget(a,strdup("peso")));
-                
-                if ( (buffer = agget(a,strdup("peso")) ) ) { 
-                  
-                    g->arestas_tem_peso = 1; 
-                    g->arestas[k]->peso = atof(buffer);
-                }
-                
-                k++;
+                if (num_arestas_visitadas < 0)
+                    return NULL;
             }
 
-            j++;
+        } else {
+
+            for (Agedge_t *a=agfstedge(graf,v); a; a=agnxtedge(graf,a,v)) {
+                
+                //printf("vertice %d agedge %d peso %f head %s tail %s\n",i,j,
+                //        atof(agget(a,strdup("peso"))), agnameof(aghead(a)), agnameof(agtail(a)) );
+                //printf("%f\n",g->vertices[i]->arestas[j]->peso);
+
+                num_arestas_visitadas = copia_arestas(a, g, i, num_arestas_visitadas);
+                
+                if (num_arestas_visitadas < 0)
+                    return NULL;
+            }
         }
-        
-        i++;
     }
 
     free (graf);    
 
 	return g;	
 }
+
 //------------------------------------------------------------------------------
 // desaloca toda a memória utilizada em g
 // 
@@ -314,7 +338,7 @@ void escreve_arestas(aresta *arestas, int n_arestas, int direcionado, int tem_pe
 
 grafo escreve_grafo(FILE *output, grafo g) {
 
-	if (!g) {
+	if (!g || !output) {
         return NULL;
     }
     //printf("Num vertices: %d\n", g->num_vertices);
