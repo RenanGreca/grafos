@@ -46,7 +46,9 @@ void imprime_vertices(vertice *v, int num_vertices);
         double peso, vertice head, vertice tail);
 */
 
-int busca_aresta(aresta *arestas, int num_arestas, double peso, char *nome_head, char *nome_tail);
+int busca_aresta(aresta *arestas, int num_arestas, char *nome_head, char *nome_tail);
+
+int busca_vertice(vertice *vertice, int num_vertices, char *nome);
 
 grafo le_grafo(FILE *input);  
 
@@ -66,8 +68,8 @@ int destroi_grafo(grafo g);
 // devolve o grafo escrito ou
 //         NULL em caso de erro 
 
-void escreve_vertices(vertice *vertices, int n_vertices);
+void escreve_vertices(vertice *vertices, int n_vertices, FILE *output);
 
-void escreve_arestas(aresta *arestas, int n_arestas, int direcionado);
+void escreve_arestas(aresta *arestas, int n_arestas, int direcionado, int arestas_tem_peso, FILE *output);
 
 grafo escreve_grafo(FILE *output, grafo g);

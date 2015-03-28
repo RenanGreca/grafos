@@ -30,6 +30,7 @@ struct grafo {
     int direcionado;
     int num_vertices;
     int num_arestas;
+    int arestas_tem_peso;
     char nome[TAM_NOME];
 };
 
@@ -41,6 +42,7 @@ grafo init_grafo(void) {
     g->direcionado = 0;
     g->num_vertices = 0;
     g->num_arestas = 0;
+    g->arestas_tem_peso = 0;
     g->nome[0] = '\0';
     return g;
 }
@@ -79,18 +81,6 @@ aresta *init_arestas(int num_arestas) {
     return a;
 }
 
-/*
-aresta adiciona_aresta(aresta arestas, int num_arestas, 
-        double peso, vertice head, vertice head) {
-    
-    aresta ptr_a = arestas+num_arestas;
-    ptr_a.peso = peso;
-    ptr_a.head = head;
-    ptr_a.tail = tail;
-
-    return ptr_a;
-}
-*/
 
 int busca_vertice(vertice *vertices, int num_vertices, char * nome) {
     for (int i=0; i<num_vertices; i++) {
@@ -112,22 +102,12 @@ int busca_aresta(aresta *arestas, int num_arestas, char *nome_head, char *nome_t
 		if (arestas[i]->head== NULL) {
 			//printf("Cabeça nula\n");
             return -1;
-            /*if ( (strcmp(arestas[i]->tail->nome, nome_head) ||
-						strcmp(arestas[i]->tail->nome, nome_tail)) &&
-						(peso == arestas[i]->peso)) {
-				return i;
-			}*/
 		}
 
         //printf("%d\n", (arestas[i]->tail== NULL));
 		if (arestas[i]->tail== NULL) {
             //printf("Rabo nula\n");
             return -1;
-			/*if ( (strcmp(arestas[i]->head->nome, nome_head) ||
-						strcmp(arestas[i]->head->nome, nome_tail)) && 
-						(peso == arestas[i]->peso) ) {
-				return i;
-			}*/		
 		}
 
         //printf("%s %s\n", arestas[i]->head->nome, arestas[i]->tail->nome);
@@ -169,7 +149,7 @@ grafo le_grafo(FILE *input) {
     // imprime_vertices(g->vertices,g->num_vertices);
         
     // Copia de Agraph_t
-    
+    char *buffer; 
     int i,j,k,l;
     i = j = k = l = 0;
     for (Agnode_t *v=agfstnode(graf); v; v=agnxtnode(graf,v)) {
@@ -187,8 +167,8 @@ grafo le_grafo(FILE *input) {
         //g->vertices[i]->arestas = (aresta *) malloc (
         //        (size_t)agdegree(graf,v,1,1)*sizeof(aresta));
         
-        //strcpy(g->vertices[i]->nome, agnameof(v));        
- //       printf("\"%s\"\n", g->vertices[i]->nome);        
+        //strcpy(g->vertices[i]->nome, agnameof(v));       
+        //printf("\"%s\"\n", g->vertices[i]->nome);        
         
         j=0;
 		for (Agedge_t *a=agfstedge(graf,v); a; a=agnxtedge(graf,a,v)) {
@@ -220,8 +200,14 @@ grafo le_grafo(FILE *input) {
                     }
                     g->arestas[k]->head = g->vertices[v_pos];
                 }
-
-                g->arestas[k]->peso = atof(agget(a,strdup("peso")));
+                //printf("%p\n",agget(a,strdup("peso")));
+                
+                if ( (buffer = agget(a,strdup("peso")) ) ) { 
+                  
+                    g->arestas_tem_peso = 1; 
+                    g->arestas[k]->peso = atof(buffer);
+                }
+                
                 k++;
                 g->num_arestas = k;
             }
@@ -271,12 +257,17 @@ grafo le_grafo(FILE *input) {
 //         0 em caso de erro
 
 int destroi_grafo(grafo g){
+   
+    if ( !g || !g->vertices[0] || ! g->vertices || !g->arestas[0] || !g->arestas)
+       return 0; 
+
     free(g->vertices[0]);
     free(g->vertices);
     free(g->arestas[0]);
     free(g->arestas);
     free(g);
-    return 0;
+
+    return 1;
 }
 
 //------------------------------------------------------------------------------
@@ -299,11 +290,12 @@ void escreve_vertices(vertice *vertices, int n_vertices, FILE *output) {
     }
 }
 
-void escreve_arestas(aresta *arestas, int n_arestas, int direcionado, FILE *output) {
+void escreve_arestas(aresta *arestas, int n_arestas, int direcionado, int tem_peso, FILE *output) {
     char rep_aresta = direcionado ? '>' : '-';
 
+    double peso;
+
     for (int i=0; i<n_arestas; i++) {
-        double peso = arestas[i]->peso;
         
         fprintf(output, "    \"%s\" -%c \"%s\"",
                 arestas[i]->tail->nome,
@@ -311,8 +303,10 @@ void escreve_arestas(aresta *arestas, int n_arestas, int direcionado, FILE *outp
                 arestas[i]->head->nome
         );
 
-        if ( FLTCMP(peso,0) )
-          fprintf(output, " [peso=%.0lf]", peso);
+        if ( tem_peso ) {
+            peso = arestas[i]->peso;
+            fprintf(output, " [peso=%.0lf]", peso);
+        }
 
         fputc('\n', output);
     }
@@ -323,7 +317,6 @@ grafo escreve_grafo(FILE *output, grafo g) {
 	if (!g) {
         return NULL;
     }
-    //printf("Escrevendo\n");
     //printf("Num vertices: %d\n", g->num_vertices);
     //printf("Num arestas: %d\n", g->num_arestas);
 
@@ -340,7 +333,7 @@ grafo escreve_grafo(FILE *output, grafo g) {
 
     escreve_vertices(g->vertices, g->num_vertices, output);
     fprintf(output, "\n");
-    escreve_arestas(g->arestas, g->num_arestas, g->direcionado, output);
+    escreve_arestas(g->arestas, g->num_arestas, g->direcionado, g->arestas_tem_peso, output);
     fprintf(output, "}\n");
 
 	return g; 
