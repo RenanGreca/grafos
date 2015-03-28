@@ -120,22 +120,16 @@ int busca_aresta(aresta *arestas, int num_arestas, char *nome_head, char *nome_t
   
     for (int i=0; i<num_arestas; i++) {
         
-//        printf("\ta %d peso %f head %s tail %s\n", i, arestas[i]->peso, 
-//                arestas[i]->head->nome , arestas[i]->tail->nome);
-        //printf("%d\n", (arestas[i]->head== NULL));
 		if (arestas[i]->head== NULL) {
    
             return -1;
 		}
 
-        //printf("%d\n", (arestas[i]->tail== NULL));
 		if (arestas[i]->tail== NULL) {
    
             return -1;
 		}
 
-        //printf("%s %s\n", arestas[i]->head->nome, arestas[i]->tail->nome);
-        //printf("%s %s\n", nome_head, nome_tail);
         if (    !strcmp( nome_head, arestas[i]->head->nome) &&
                 !strcmp( nome_tail, arestas[i]->tail->nome) ) {
    
@@ -147,18 +141,10 @@ int busca_aresta(aresta *arestas, int num_arestas, char *nome_head, char *nome_t
     return -1;
 }
 
-void imprime_vertices (vertice *v, int num_vertices) {
-    
-    for (int i=0; i<num_vertices; i++) {
-
-        printf("\"%s\"\n", v[i]->nome);
-    }
-}
-
-
 int copia_arestas(Agedge_t *a, grafo g, int i, int num_arestas_visitadas) {
     
     char *buffer; 
+    char *peso = strdup("peso"); 
     int v_pos;
 
     if ( busca_aresta(g->arestas, num_arestas_visitadas, agnameof(aghead(a)), 
@@ -192,13 +178,16 @@ int copia_arestas(Agedge_t *a, grafo g, int i, int num_arestas_visitadas) {
         }
        
         //printf("%p\n",agget(a,strdup("peso")));
-        
-        if ( (buffer = agget(a,strdup("peso")) ) ) { 
+      
+          
+        if ( (buffer = agget(a,peso) ) ) { 
           
             g->arestas_tem_peso = 1; 
             g->arestas[num_arestas_visitadas]->peso = atof(buffer);
         }
-        
+
+        free(peso);
+       
         num_arestas_visitadas++;
     }
 
@@ -239,8 +228,6 @@ grafo le_grafo(FILE *input) {
 
     for (Agnode_t *v=agfstnode(graf); v; v=agnxtnode(graf,v), ++i) {
         
-        //printf("\"%s\"\n", g->vertices[i]->nome);        
-        
         if (g->direcionado) {
        
             for (Agedge_t *a=agfstout(graf,v); a; a=agnxtout(graf,a)) {
@@ -255,10 +242,6 @@ grafo le_grafo(FILE *input) {
 
             for (Agedge_t *a=agfstedge(graf,v); a; a=agnxtedge(graf,a,v)) {
                 
-                //printf("vertice %d agedge %d peso %f head %s tail %s\n",i,j,
-                //        atof(agget(a,strdup("peso"))), agnameof(aghead(a)), agnameof(agtail(a)) );
-                //printf("%f\n",g->vertices[i]->arestas[j]->peso);
-
                 num_arestas_visitadas = copia_arestas(a, g, i, num_arestas_visitadas);
                 
                 if (num_arestas_visitadas < 0)
@@ -267,21 +250,24 @@ grafo le_grafo(FILE *input) {
         }
     }
 
-    free (graf);    
+    agclose(graf);
+    agfree(graf,NULL);
 
 	return g;	
 }
-
-//------------------------------------------------------------------------------
-// desaloca toda a memória utilizada em g
-// 
-// devolve 1 em caso de sucesso ou
-//         0 em caso de erro
 
 int destroi_grafo(grafo g){
    
     if ( !g || !g->vertices[0] || ! g->vertices || !g->arestas[0] || !g->arestas)
        return 0; 
+
+    for (int i=0 ; i<g->num_vertices ; ++i) {
+    
+        if (!g->vertices[i]->arestas)
+            return 0;
+    
+        free(g->vertices[i]->arestas); 
+    }
 
     free(g->vertices[0]);
     free(g->vertices);
@@ -291,15 +277,6 @@ int destroi_grafo(grafo g){
 
     return 1;
 }
-
-//------------------------------------------------------------------------------
-// escreve o grafo g em output usando o formato dot, de forma que
-// 
-// 1. todos os vértices são escritos antes de todas as arestas/arcos 
-// 2. se uma aresta tem peso, este deve ser escrito como um atributo
-//
-// devolve o grafo escrito ou
-//         NULL em caso de erro 
 
 void escreve_vertices(vertice *vertices, int n_vertices, FILE *output) {
     
@@ -341,14 +318,6 @@ grafo escreve_grafo(FILE *output, grafo g) {
 	if (!g || !output) {
         return NULL;
     }
-    //printf("Num vertices: %d\n", g->num_vertices);
-    //printf("Num arestas: %d\n", g->num_arestas);
-
-    /*direcionado = g->direcionado;
-    n_vertices = g->num_vertices;
-    n_arestas = g->num_arestas;
-
-    arestas = g->arestas;*/
 
     fprintf(output, "strict %sgraph \"%s\" {\n\n",
       g->direcionado ? "di" : "",
