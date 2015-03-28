@@ -1,4 +1,4 @@
-CFLAGS  = -O0 -g -std=c99 \
+CFLAGS  = -O0 -g -std=c99 -lm \
 	  -pipe \
 	  -ggdb3 -Wstrict-overflow=5 -fstack-protector-all \
       -W -Wall -Wextra \
@@ -46,9 +46,6 @@ testa : exemplo
 
 exemplo : exemplo.c
 	$(CC) $(CFLAGS) \
-	      -Wno-cast-qual \
-              -Wno-padded \
-              -Wno-undef \
               -I /usr/include/graphviz \
               -o $@ \
               $< \
@@ -56,6 +53,9 @@ exemplo : exemplo.c
 
 teste : teste.c grafo.c 
 	$(CC) $(CFLAGS) -o $@ $^ -I /usr/include/graphviz -l cgraph 
+
+struct : struct.c
+	$(CC) $(CFLAGS) -o $@ $^
 
 emacs24-dep.png : emacs24-dep.dot
 	dot -v -Tpng $< -o $@
