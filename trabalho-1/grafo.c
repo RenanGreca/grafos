@@ -1,8 +1,12 @@
 #include <stdlib.h>
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 #include <cgraph.h>
 #include "grafo.h"
+
+#define epsilon         0.00000001
+#define FLTCMP(f1,f2)   ( fabs(f1-f2) < epsilon ) 
 
 extern char * strdup(const char*);
 
@@ -149,7 +153,6 @@ void imprime_vertices (vertice *v, int num_vertices) {
 
 grafo le_grafo(FILE *input) {
 
-	printf("Lendo\n");
     Agraph_t *graf = agread(input, NULL);
     
     grafo g = NULL;
@@ -161,7 +164,7 @@ grafo le_grafo(FILE *input) {
     g->vertices = init_vertices(g->num_vertices);
     g->arestas = init_arestas(agnedges(graf));
 
-    strcpy(g->nome, "meu grafo");
+    strcpy(g->nome, agnameof(graf));
 
     // imprime_vertices(g->vertices,g->num_vertices);
         
@@ -308,7 +311,7 @@ void escreve_arestas(aresta *arestas, int n_arestas, int direcionado, FILE *outp
                 arestas[i]->head->nome
         );
 
-        if ( peso )
+        if ( FLTCMP(peso,0) )
           fprintf(output, " [peso=%.0lf]", peso);
 
         fputc('\n', output);
