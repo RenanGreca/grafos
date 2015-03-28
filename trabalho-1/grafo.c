@@ -97,14 +97,11 @@ int busca_vertice(vertice *vertices, int num_vertices, char * nome) {
     return -1;
 }
 
-int busca_aresta(aresta *arestas, int num_arestas, double peso, 
-        char *nome_head, char *nome_tail) {
+// Comparando arestas somente com nome dos vértices. Não acha arestas paralelas
+int busca_aresta(aresta *arestas, int num_arestas, char *nome_head, char *nome_tail) {
   
     for (int i=0; i<num_arestas; i++) {
         
-        // Assume que entre dois vértices só pode haver uma aresta
-        // Precisa checar head com tail e vice-versa?
-       
 //        printf("\ta %d peso %f head %s tail %s\n", i, arestas[i]->peso, 
 //                arestas[i]->head->nome , arestas[i]->tail->nome);
         //printf("%d\n", (arestas[i]->head== NULL));
@@ -198,7 +195,6 @@ grafo le_grafo(FILE *input) {
             //printf("%f\n",g->vertices[i]->arestas[j]->peso);
 
             if ( busca_aresta(g->arestas, g->num_arestas, 
-                    atof( agget(a, strdup("peso")) ), 
                     agnameof(aghead(a)), agnameof(agtail(a)) ) < 0 ) {
 
                 //printf("Nova aresta\n");
@@ -289,33 +285,33 @@ int destroi_grafo(grafo g){
 // devolve o grafo escrito ou
 //         NULL em caso de erro 
 
-void escreve_vertices(vertice *vertices, int n_vertices) {
+void escreve_vertices(vertice *vertices, int n_vertices, FILE *output) {
     
     if (!n_vertices) {
         return;
     }
 
     for (int i=0; i<n_vertices; i++) {
-        printf("    \"%s\"\n", vertices[i]->nome);
+        fprintf(output, "    \"%s\"\n", vertices[i]->nome);
     }
 }
 
-void escreve_arestas(aresta *arestas, int n_arestas, int direcionado) {
+void escreve_arestas(aresta *arestas, int n_arestas, int direcionado, FILE *output) {
     char rep_aresta = direcionado ? '>' : '-';
 
     for (int i=0; i<n_arestas; i++) {
         double peso = arestas[i]->peso;
         
-        printf("    \"%s\" -%c \"%s\"",
+        fprintf(output, "    \"%s\" -%c \"%s\"",
                 arestas[i]->tail->nome,
                 rep_aresta,
                 arestas[i]->head->nome
         );
 
         if ( peso )
-          printf(" [peso=%.0lf]", peso);
+          fprintf(output, " [peso=%.0lf]", peso);
 
-        printf("\n");
+        fputc('\n', output);
     }
 }
 
@@ -334,16 +330,15 @@ grafo escreve_grafo(FILE *output, grafo g) {
 
     arestas = g->arestas;*/
 
-    printf("strict %sgraph \"%s\" {\n\n",
+    fprintf(output, "strict %sgraph \"%s\" {\n\n",
       g->direcionado ? "di" : "",
       g->nome
     );
 
-    escreve_vertices(g->vertices, g->num_vertices);
-    printf("\n");
-    escreve_arestas(g->arestas, g->num_arestas, g->direcionado);
-    printf("}\n");
+    escreve_vertices(g->vertices, g->num_vertices, output);
+    fprintf(output, "\n");
+    escreve_arestas(g->arestas, g->num_arestas, g->direcionado, output);
+    fprintf(output, "}\n");
 
- 	fprintf(output, "Fim\n");
 	return g; 
 }
