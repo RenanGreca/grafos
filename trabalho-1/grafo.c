@@ -1,12 +1,8 @@
 #include <stdlib.h>
-#include <math.h>
 #include <stdio.h>
 #include <string.h>
 #include <cgraph.h>
 #include "grafo.h"
-
-#define epsilon         0.00000001
-#define FLTCMP(f1,f2)   ( fabs(f1-f2) < epsilon ) 
 
 extern char * strdup(const char*);
 
@@ -115,7 +111,6 @@ int busca_vertice(vertice *vertices, int num_vertices, char * nome) {
     return -1;
 }
 
-// Comparando arestas somente com nome dos vértices. Não acha arestas paralelas
 int busca_aresta(aresta *arestas, int num_arestas, char *nome_head, char *nome_tail) {
   
     for (int i=0; i<num_arestas; i++) {
@@ -177,7 +172,6 @@ int copia_arestas(Agedge_t *a, grafo g, int i, int num_arestas_visitadas) {
             g->arestas[num_arestas_visitadas]->head = g->vertices[v_pos];
         }
        
-        //printf("%p\n",agget(a,strdup("peso")));
       
           
         if ( (buffer = agget(a,peso) ) ) { 
@@ -210,9 +204,7 @@ grafo le_grafo(FILE *input) {
 
     strcpy(g->nome, agnameof(graf));
 
-    // imprime_vertices(g->vertices,g->num_vertices);
-  
-    // Copia vértices    
+    // Copia Vértices
     int i = 0;
     for (Agnode_t *v=agfstnode(graf); v; v=agnxtnode(graf,v)) {
         g->vertices[i]->arestas = (aresta *) malloc (

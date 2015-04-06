@@ -40,12 +40,6 @@ vertice *init_vertices(int num_vertices);
 
 aresta *init_arestas(int num_arestas);
 
-void imprime_vertices(vertice *v, int num_vertices);
-/*
-   aresta adiciona_aresta(aresta aresta, int num_arestas
-        double peso, vertice head, vertice tail);
-*/
-
 int busca_aresta(aresta *arestas, int num_arestas, char *nome_head, char *nome_tail);
 
 int busca_vertice(vertice *vertice, int num_vertices, char *nome);
