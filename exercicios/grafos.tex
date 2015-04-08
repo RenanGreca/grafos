@@ -1,0 +1,177 @@
+\documentclass{article}
+\usepackage{graphics}
+\usepackage{fancyhdr}
+\usepackage{url}
+\usepackage{times}
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage[margin=1in]{geometry}
+\usepackage{textcomp}
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage{cite}
+\usepackage{microtype}
+\usepackage{amsmath}
+
+\DisableLigatures{encoding = *, family = * }
+
+\newcommand{\name}{Renan Greca}
+\newcommand{\website}{www.renangreca.com}
+\newcommand{\email}{renangreca@gmail.com}
+\newcommand{\coursename}{Grafos}
+
+
+\usepackage[font=small,labelfont=bf,labelsep=space]{caption}
+\captionsetup{%
+  figurename=fig.,
+  tablename=tab.
+}
+
+%\bibliographystyle{alpha}  
+
+\begin{document}
+
+\fontfamily{times}\selectfont
+\pagestyle{fancy}
+\lhead{\name}
+\chead{}
+\rhead{April 2014}
+\lfoot{}
+\cfoot{\thepage}
+\rfoot{}
+
+\inputencoding{latin1}
+
+\begin{center}
+    \Large
+    \textbf{Lista de Exercícios de Grafos} \\
+	Renan Greca \\
+    %\coursetitle - Research Paper\\
+    \small
+\end{center}
+
+\large
+\doublespacing
+
+\begin{enumerate}
+	\item % 1
+	\begin{enumerate}
+		\item % a
+			\begin{align*}
+				3x + 5y &= 2\times25 \\
+				 x +  y &=   14
+			\end{align*}
+			4 de grau 5 e 10 de grau 3.
+		\item % b
+			\begin{align*}
+				d_1x + d_2y &= 2m \\
+				   x +  y &=  n \\
+				\\
+				(d_2-d_1)y &= 2m-d_1n \\
+						 y &= \frac{2m-d_1n}{d_2-d_1}
+				\\
+				(d_1-d_2)x &= 2m-d_2n \\
+						 x &= \frac{2m-d_2n}{d_1-d_2}
+			\end{align*}
+	\end{enumerate}
+	\item % 2
+		Seja $U$ o conjunto de vértices de G cujo grau é 1. $|U|\geq2$.
+		Teorema do número de arestas:
+		\begin{align*}
+			2|E(G)| = \sum_{v \in V(G)}{\delta(v)}
+		\end{align*}
+		Então:
+		\begin{align*}
+			2|E(G)| = \sum_{v \in V(G)-U}{\delta(v)} + \sum_{u \in U}{\delta(u)}
+		\end{align*}
+	\item % 3
+		Num grafo com $n$ vértices, há $\frac{n(n-1)}{2}$ possíveis arestas. Há um grafo diferente para cada combinação possível dessas arestas.
+	\item % 4
+	\begin{enumerate}
+		\item % a
+			O grau máximo de cada vértice é $n-1$. Usando o teorema do número de arestas:
+			\begin{align*}
+				2|E(G)| = \sum_{v \in V(G)}{\delta(v)}
+			\end{align*}
+			Então, num grafo com o máximo número de arestas, onde $|\delta(v)=n-1|$ para todo $v$, temos que:
+			\begin{align*}
+				|E(G)| = \frac{\sum_{v \in V(G)}{n-1}}{2}
+			\end{align*}
+			Como $|V(G)|=n$, temos:
+			\begin{align*}
+				|E(G)| = \frac{n(n-1)}{2}
+			\end{align*}
+		\item % b
+			A prova acima só é válida supondo que todos os vértices têm seu grau máximo, $n-1$. Portanto, não tem como um grafo completo ter uma quantidade de arestas diferente de $\frac{n(n-1)}{2}$, nem como um grafo incompleto ter esse número de arestas.
+	\end{enumerate}
+	\item % 5
+	Num grafo $G$ de $n$ vértices, nós temos:
+	\begin{align*}
+		V(G) &= \{1, ..., n\} \\
+		\delta(G) &= \{0, ..., n-1\}
+	\end{align*}
+	Para o vértice $n$ ter grau $n-1$, o vértice $1$ \textit{não} pode ter grau $0$. Portanto, é absurdo um grafo onde todos os vértices têm graus distintos uns dos outros.
+	\item % 6
+	\begin{enumerate}
+		\item % a
+		\begin{align*}
+			\overline{\delta}(G) = \frac{2|E(G)|}{|V(G)|}
+		\end{align*}
+		\item %b
+		Vamos provar que:
+		\begin{align*}
+			\delta(G) \leq \overline{\delta}(G) \leq \Delta(G)
+		\end{align*}
+		Como $\overline{\delta}(G)$ é o grau médio do grafo, podemos concluir que, se todos os vértices têm o mesmo grau, ou seja, $\delta(G) = \Delta(G)$, também $\delta(G) = \overline{\delta}(G) = \Delta(G)$. Com qualquer variedade de graus, naturalmente a média é maior que o mínimo e menor que o máximo.
+	\end{enumerate}	
+	\item % 7
+	\begin{align*}
+		|E(G)| = \frac{k\times|V(G)|}{2}
+	\end{align*}
+	\item % 8
+	\begin{enumerate}
+		\item % a
+		Não, porque a soma dos graus é ímpar. Assim, o teorema do número de arestas torna-se absurdo, pois |E(G)| deve ser inteiro.
+		\begin{align*}
+			|E(G)| = \frac{\sum_{v \in V(G)}{\delta(v)}}{2}
+		\end{align*}
+		\item % b
+		Não, porque $n=5$, mas $\Delta(G)\leq n-1$. É impossível um vértice com grau 5 num grafo de 5 vértices. 
+		\item % c
+		????
+	\end{enumerate}
+	\item % 9
+	???
+	\item % 10
+	Seja $e = |E(G)|$ e $v = |V(G)|$:
+	\begin{align*}
+	\rho(G) = \frac{e}{\frac{v(v-1)}{2}}
+	\end{align*}
+	Ou seja, a densidade de um grafo é a razão entre o número de arestas nesse grafo e o número máximo de arestas possível num grafo com os mesmos vértices. Se $e=0$, $\rho(G)=0$. Se $e=\frac{v(v-1)}{2}$, $\rho(G)=1$.
+	\item % 11
+	\begin{enumerate}
+		\item % a
+		
+	\end{enumerate}
+	\item % 12 
+	???
+	\item % 13
+	???
+	\item % 14
+	???
+	\item % 15
+	???
+	\item % 16
+	???
+	\item % 17
+	
+\end{enumerate}
+ 
+\end{document}
+
+
+
+
+
+
+
