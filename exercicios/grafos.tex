@@ -81,11 +81,17 @@
 			2|E(G)| = \sum_{v \in V(G)}{\delta(v)}
 		\end{align*}
 		Então:
-		\begin{align*}
-			2|E(G)| = \sum_{v \in V(G)-U}{\delta(v)} + \sum_{u \in U}{\delta(u)}
-		\end{align*}
+		\begin{align}
+			2|E(G)| &= \sum_{v \in V(G)-U}{\delta(v)} + \sum_{u \in U}{\delta(u)} \\
+					&\geq 2|V(G)-U| + |U| = 2|V(G)| - 2|U| + U \\
+			2|E(G)| &\geq 2|V(G)| - |U| \\
+			|U|     &\geq 2|V(G)| - 2|E(G)| = 2(|V(G)| - |E(G)|) \\
+			|U|		&\geq 2(1) \\
+			|U|		&\geq 2
+		\end{align}
+		A linha 5 acontece por causa da segunda regra do grafo, $|E(G)|<|V(G)|$.
 	\item % 3
-		Num grafo com $n$ vértices, há $\frac{n(n-1)}{2}$ possíveis arestas. Há um grafo diferente para cada combinação possível dessas arestas.
+		Num grafo com $n$ vértices, há $\frac{n(n-1)}{2}$ possíveis arestas. Há um grafo diferente para cada combinação possível dessas arestas. Ou seja, $2^\frac{n(n-1)}{2}$ ou $\sqrt{2^{n(n-1)}}$.
 	\item % 4
 	\begin{enumerate}
 		\item % a
@@ -128,10 +134,11 @@
 	\begin{align*}
 		|E(G)| = \frac{k\times|V(G)|}{2}
 	\end{align*}
+	Todo vértice tem o mesmo grau e o número de arestas é a metade da soma dos graus (que neste caso torna-se a multiplicação acima).
 	\item % 8
 	\begin{enumerate}
 		\item % a
-		Não, porque a soma dos graus é ímpar. Assim, o teorema do número de arestas torna-se absurdo, pois |E(G)| deve ser inteiro.
+		Não, porque a soma dos graus é ímpar. Assim, o teorema do número de arestas torna-se absurdo, pois |E(G)| é inteiro.
 		\begin{align*}
 			|E(G)| = \frac{\sum_{v \in V(G)}{\delta(v)}}{2}
 		\end{align*}
@@ -141,22 +148,28 @@
 		????
 	\end{enumerate}
 	\item % 9
-	???
+	Somando-se todos os graus de saída dos vértices de um grafo, temos o número total de arestas do grafo, pois cada aresta sai de apenas um vértice. O mesmo raciocínio vale para os graus de entrada dos vértices.
 	\item % 10
 	Seja $e = |E(G)|$ e $v = |V(G)|$:
 	\begin{align*}
-	\rho(G) = \frac{e}{\frac{v(v-1)}{2}}
+		\rho(G) = \frac{e}{\frac{v(v-1)}{2}}
 	\end{align*}
 	Ou seja, a densidade de um grafo é a razão entre o número de arestas nesse grafo e o número máximo de arestas possível num grafo com os mesmos vértices. Se $e=0$, $\rho(G)=0$. Se $e=\frac{v(v-1)}{2}$, $\rho(G)=1$.
 	\item % 11
 	\begin{enumerate}
 		\item % a
-		
+		Um grafo cuja representação visual é um pentágono (cinco vértices com grau 2 cada) é auto-complementar.
+		\item % b
+		Para um grafo ser complementar, ele deve ter metade do número máximo de arestas possível. Ou seja,
+		\begin{align*}
+			|E(G)| = \frac{\frac{|V(G)|(|V(G)-1)}{2}}{2} = \frac{|V(G)|(|V(G)-1)}{4}
+		\end{align*}
+		$|E(G)|$ é inteiro. Portanto, entre $|V(G)|$ e $|V(G)|-1$, um deve ser divisível por 4.
 	\end{enumerate}
 	\item % 12 
 	???
 	\item % 13
-	???
+	Num grafo direcionado com laços, há no máximo $n^2$ arestas. Portanto, há $2^{n^2}$ grafos possíveis. Sem laços, o máximo é $n(n-1)$ e portanto há $2^{n(n-1)}$ grafos possíveis.
 	\item % 14
 	???
 	\item % 15
@@ -164,6 +177,60 @@
 	\item % 16
 	???
 	\item % 17
+	???
+	\item % 18
+	???
+	\item % 19
+	Seja $G=\{V(G),E(G)\}$. Assim,
+	\begin{align*}
+		(G-u) &= \{V(G)-u, \{(a, b) \in E(G) | a \neq u | b \neq u\}\} \\
+		(G-u)-v &= \{V(G)-u-v, \{(a, b) \in E(G) | a \neq u | b \neq u | a \neq v | b \neq v\}\}
+	\end{align*}
+	E também,
+	\begin{align*}
+		(G-v) &= \{V(G)-v, \{(a, b) \in E(G) | a \neq v | b \neq v\}\} \\
+		(G-v)-u &= \{V(G)-u-v, \{(a, b) \in E(G) | a \neq u | b \neq u | a \neq v | b \neq v\}\}
+	\end{align*}
+	Portanto,
+	\begin{align*}
+		(G-v)-u &= (G-u)-v
+	\end{align*}
+	\item % 20
+	Sim.
+	\begin{align*}
+		G[V(G)-X] &= \{V(G)-X, \{(a, b) \in E(G) | a, b \notin X\}\} \\
+				  &= G - X
+	\end{align*}
+	A igualdade e a afirmação são verdadeiras porque uma aresta $(a, b)$ não pode pertencer a $G$ se $a, b \notin V(G)$. Assim, cada remoção de vértice também remove qualquer aresta que estava conectada a ele.
+	\item % 21
+	Seja $G=\{V(G),E(G)\}$. Assim,
+	\begin{align*}
+		(G-\alpha) &= \{V(G), \{(a, b) \in E(G)-\alpha\} \\
+		(G-\alpha)-\beta &= \{V(G), \{(a, b) \in E(G)-\alpha-\beta\}
+	\end{align*}
+	E também,
+	\begin{align*}
+		(G-\beta) &= \{V(G), \{(a, b) \in E(G)-\beta \} \\
+		(G-\beta)-\alpha &= \{V(G), \{(a, b) \in E(G)-\alpha-\beta\}
+	\end{align*}
+	Portanto,
+	\begin{align*}
+		(G-\alpha)-\beta &= (G-\beta)-\alpha
+	\end{align*}
+	\item % 22
+	Falso.
+	\begin{align*}
+		G[E(G)-X] &= \{\{v \in V(G) | v \notin (a,b) , \forall (a,b) \in X \} , E(G)-X \} \\
+		G-X &= \{V(G), E(G)-X\}
+	\end{align*}
+	A igualdade e a afirmação são falsas porque um subgrafo de G induzido por arestas não contém os vértices que conectavam as arestas removidas. Um subgrafo gerado por remoções de arestas mantém todos seus vértices originais.
+	\item % 23
+	Um grafo completo é um grafo onde todos os vértices têm grau $n-1$, onde $n$ é o número de vértices. Ao se remover um vértice $v$, temos um novo número $k$ de vértices, onde $k=n-1$. Além disso, todos os vértices têm seus graus reduzidos para $k-1$, pois perderam suas conexões com $v$. Portanto, o grafo continua completo.
+	\item % 24
+	\begin{align*}
+		|E(G-v)| = \frac{\sum_{u \in V(G)-v}{\delta_G(u)}}{2} = \frac{\sum_{u \in V(G)}{\delta(u)} - 2\delta_G(v)}{2} = |E(G)| - \delta_G(v) 
+	\end{align*}
+	A segunda igualdade acontece porque além do grau do próprio $v$, precisamos descontar as arestas removidas dos graus dos outros vértices (que no total resulta em $\delta_G(v)$).
 	
 \end{enumerate}
  
