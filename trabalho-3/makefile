@@ -39,23 +39,8 @@ CFLAGS  = -O0 -g -std=c99 -lm \
 .PHONY : testa clean
 
 #------------------------------------------------------------------------------
-testa : exemplo
-	./$< < emacs24-dep.dot
-	./$< < paises.dot
-	./$< < cidades.dot
-
-exemplo : exemplo.c
-	$(CC) $(CFLAGS) \
-              -I /usr/include/graphviz \
-              -o $@ \
-              $< \
-	      -l cgraph
-
-teste : grafo.c 
-	$(CC) $(CFLAGS) -o $@ $^ -I /usr/include/graphviz -l cgraph 
-
-struct : struct.c
-	$(CC) $(CFLAGS) -o $@ $^
+grafo : grafo.c 
+	$(CC) $(CFLAGS) -o $@ $^ -I /usr/local/include/graphviz -l cgraph 
 
 emacs24-dep.png : emacs24-dep.dot
 	dot -v -Tpng $< -o $@

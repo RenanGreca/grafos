@@ -6,33 +6,39 @@
 //------------------------------------------------------------------------------
 // valor que representa "infinito"
 
+// DONE
 const long int infinito;
 
 //-----------------------------------------------------------------------------
 // lista encadeada
 
+// DONE
 typedef struct lista *lista;
 
 //-----------------------------------------------------------------------------
 // nó da lista encadeada cujo conteúdo é um void *
 
+// DONE
 typedef struct no *no;
 
 //------------------------------------------------------------------------------
 // devolve o primeiro nó da lista l,
 //      ou NULL, se l é vazia
 
+// DONE
 no primeiro_no(lista l);
 
 //------------------------------------------------------------------------------
 // devolve o sucessor do nó n em l,
 //      ou NULL, se n for o último nó de l
 
+// DONE
 no proximo_no(no n);
 
 //------------------------------------------------------------------------------
 // devolve o conteúdo do nó n
 
+// DONE
 void *conteudo(no n);
 
 //------------------------------------------------------------------------------
@@ -47,6 +53,7 @@ void *conteudo(no n);
 // devolve 1 em caso de sucesso,
 //      ou 0 em caso de falha
 
+// DONE ??
 int destroi_lista(lista l, int destroi(void *));
 
 //------------------------------------------------------------------------------
@@ -54,11 +61,13 @@ int destroi_lista(lista l, int destroi(void *));
 // 
 // os vértices do grafo tem nome que são "string"s quaisquer
 
+// DONE
 typedef struct vertice *vertice;
 
 //------------------------------------------------------------------------------
 // devolve o nome do vertice v
 
+// DONE
 char *nome_vertice(vertice v);
 
 //------------------------------------------------------------------------------
@@ -74,6 +83,7 @@ char *nome_vertice(vertice v);
 // 
 // o peso de uma aresta é um long int e seu valor default é zero
 
+// DONE
 typedef struct grafo *grafo;
 
 //------------------------------------------------------------------------------
@@ -88,6 +98,7 @@ typedef struct grafo *grafo;
 // desaloca a estrtura de dados devolvida pelas rotinas de libcgraph
 // quando da leitura do grafo assim que ela não seja mais necessária
 
+// DONE
 grafo le_grafo(FILE *input);  
 
 //------------------------------------------------------------------------------
@@ -99,6 +110,7 @@ grafo le_grafo(FILE *input);
 // g é um (void *) para que destroi_grafo() possa ser usada como argumento de
 // destroi_lista()
 
+// DONE
 int destroi_grafo(void *g);
 
 //------------------------------------------------------------------------------
@@ -110,22 +122,26 @@ int destroi_grafo(void *g);
 // devolve o grafo escrito,
 //      ou NULL, em caso de erro 
 
+// DONE
 grafo escreve_grafo(FILE *output, grafo g);
 
 //------------------------------------------------------------------------------
 // devolve o nome do grafo g
 
+// DONE
 char *nome(grafo g);
 
 //------------------------------------------------------------------------------
 // devolve o número de vértices do grafo g
 
+// DONE
 unsigned int n_vertices(grafo g);
 
 //------------------------------------------------------------------------------
 // devolve 1, se g é direcionado,
 //      ou 0, caso contrário
 
+// DONE
 int direcionado(grafo g);
 
 //------------------------------------------------------------------------------
