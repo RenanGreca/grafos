@@ -54,7 +54,7 @@ struct grafo {
 
 };
 
-int copia_arestas(Agedge_t *a, grafo g, int i, int num_arestas_visitadas);
+int copia_arestas(Agedge_t *a, grafo g, int i, int *num_arestas_visitadas); 
 
 // LISTA ------------------------------------------------------------------------------
 no primeiro_no(lista l) {
@@ -203,18 +203,20 @@ int busca_aresta(aresta *arestas, unsigned int num_arestas, char *nome_head, cha
     return -1;
 }
 
-int copia_arestas(Agedge_t *a, grafo g, int i, int num_arestas_visitadas) {
+int copia_arestas(Agedge_t *a, grafo g, int num_vertices_visitados, int *num_arestas_visitadas) {
     
     char *buffer; 
     char *peso = strdup("peso"); 
     int v_pos;
+    int a_pos;
 
-    if ( busca_aresta(g->arestas, num_arestas_visitadas, agnameof(aghead(a)), 
-                agnameof(agtail(a)) ) < 0 ) {
 
-        if ( !strcmp(g->vertices[i]->nome, agnameof(aghead(a))) ) {
+    if ( ( a_pos = busca_aresta(g->arestas, *num_arestas_visitadas, agnameof(aghead(a)), 
+                agnameof(agtail(a)) ) ) < 0 ) {
+
+        if ( !strcmp(g->vertices[num_vertices_visitados]->nome, agnameof(aghead(a))) ) {
             
-            g->arestas[num_arestas_visitadas]->head = g->vertices[i];
+            g->arestas[*num_arestas_visitadas]->head = g->vertices[num_vertices_visitados];
 
             v_pos = busca_vertice(g->vertices, g->num_vertices, agnameof(agtail(a)));
             
@@ -223,11 +225,11 @@ int copia_arestas(Agedge_t *a, grafo g, int i, int num_arestas_visitadas) {
                 return -1;
             }
             
-            g->arestas[num_arestas_visitadas]->tail = g->vertices[v_pos];
+            g->arestas[*num_arestas_visitadas]->tail = g->vertices[v_pos];
         
         } else {
          
-            g->arestas[num_arestas_visitadas]->tail = g->vertices[i];
+            g->arestas[*num_arestas_visitadas]->tail = g->vertices[num_vertices_visitados];
 
             v_pos = busca_vertice(g->vertices, g->num_vertices, agnameof(aghead(a)));
           
@@ -236,86 +238,102 @@ int copia_arestas(Agedge_t *a, grafo g, int i, int num_arestas_visitadas) {
                 return -1;
             }
 
-            g->arestas[num_arestas_visitadas]->head = g->vertices[v_pos];
+            g->arestas[*num_arestas_visitadas]->head = g->vertices[v_pos];
         }
        
       
-          
         if ( (buffer = agget(a,peso) ) ) { 
           
             g->tem_peso = 1; 
-            g->arestas[num_arestas_visitadas]->peso = atol(buffer);
+            g->arestas[*num_arestas_visitadas]->peso = atof(buffer);
         }
 
         free(peso);
        
-        num_arestas_visitadas++;
+        (*num_arestas_visitadas)++;
+        return (*num_arestas_visitadas) - 1;
     }
 
-    return num_arestas_visitadas;
+    return a_pos;
 }
 
 //------------------------------------------------------------------------------
 grafo le_grafo(FILE *input) {
 
-	Agraph_t *graf = agread(input, NULL);
+    Agraph_t *graf = agread(input, NULL);
+    
+    grafo g = NULL;
+    g = init_grafo();
 
-	grafo g = NULL;
-	g = init_grafo();
+    g->direcionado = agisdirected(graf);
+    g->num_vertices = agnnodes(graf);    
+    g->num_arestas = agnedges(graf);    
+    
+    g->vertices = init_vertices(g->num_vertices);
+    g->arestas = init_arestas(g->num_arestas);
 
-	g->direcionado = agisdirected(graf);
-	g->num_vertices = (unsigned) agnnodes(graf);    
-	g->num_arestas = (unsigned) agnedges(graf);    
+    strcpy(g->nome, agnameof(graf));
 
-	g->vertices = init_vertices(g->num_vertices);
-	g->arestas = init_arestas(g->num_arestas);
+    // Copia Vértices
+    int num_vertices_visitados = 0;
+    for (Agnode_t *v=agfstnode(graf); v; v=agnxtnode(graf,v)) {
+       
+        g->vertices[num_vertices_visitados]->grau = agdegree(graf,v,1,1); 
 
-	strcpy(g->nome, agnameof(graf));
+        g->vertices[num_vertices_visitados]->arestas = (aresta *) malloc (
+            (size_t) g->vertices[num_vertices_visitados]->grau * sizeof(aresta));
+        
+        strcpy(g->vertices[num_vertices_visitados]->nome, agnameof(v));        
+        num_vertices_visitados++;
+    }
 
-	// Copia Vértices
-	int i = 0;
-	for (Agnode_t *v=agfstnode(graf); v; v=agnxtnode(graf,v)) {
-		g->vertices[i]->grau = agdegree(graf,v,1,1);
+    // Copia Arestas
+    int num_arestas_visitadas;
+    int j, a_pos;
+    num_vertices_visitados = num_arestas_visitadas = 0;
+    
+    for (Agnode_t *v=agfstnode(graf); v; v=agnxtnode(graf,v), ++num_vertices_visitados) {
+        
+        if (g->direcionado) {
+     
+            j = 0;  
+            for (Agedge_t *a=agfstout(graf,v); a; a=agnxtout(graf,a), ++j) {
+                
+      //          printf("j %d g %d\n",j, g->vertices[num_vertices_visitados]->grau);
+               
+                a_pos = copia_arestas(a, g, num_vertices_visitados, &num_arestas_visitadas);
+                
+                g->vertices[num_vertices_visitados]->arestas[j] = g->arestas[a_pos];
 
-		g->vertices[i]->arestas = (aresta *) malloc (
-				(size_t)g->vertices[i]->grau*sizeof(aresta));
+/*                printf("v[%d] %s a[%d] %s %s\n", num_vertices_visitados, g->vertices[num_vertices_visitados]->nome, j,
+                        g->vertices[num_vertices_visitados]->arestas[j]->tail->nome,
+                        g->vertices[num_vertices_visitados]->arestas[j]->head->nome); 
+  */              
+                g->vertices[num_vertices_visitados]->arestas[j] = g->arestas[a_pos];
+            }
 
-		strcpy(g->vertices[i]->nome, agnameof(v));        
-		i++;
-	}
+        } else {
 
-	// Copia Arestas
-	int num_arestas_visitadas;
-	i = num_arestas_visitadas = 0;
+            j = 0;
+            for (Agedge_t *a=agfstedge(graf,v); a; a=agnxtedge(graf,a,v), ++j) {
+                
+                a_pos = copia_arestas(a, g, num_vertices_visitados, &num_arestas_visitadas);
+                
+              //  printf("j %d g %d\n",j, g->vertices[i]->grau);
+                g->vertices[num_vertices_visitados]->arestas[j] = g->arestas[a_pos];
+              /*  printf("v[%d] %s a[%d] %s %s\n",i, g->vertices[i]->nome, j,
+                        g->vertices[i]->arestas[j]->head->nome, 
+                        g->vertices[i]->arestas[j]->tail->nome);
+                */
+            }
+        }
+    }
 
-	for (Agnode_t *v=agfstnode(graf); v; v=agnxtnode(graf,v), ++i) {
+    printf("arestas visitadas: %d num_arestas em g: %d\n", num_arestas_visitadas, g->num_arestas);
+    agclose(graf);
+    agfree(graf,NULL);
 
-		if (g->direcionado) {
-
-			for (Agedge_t *a=agfstout(graf,v); a; a=agnxtout(graf,a)) {
-
-				num_arestas_visitadas = copia_arestas(a, g, i, num_arestas_visitadas);
-
-				if (num_arestas_visitadas < 0)
-					return NULL;
-			}
-
-		} else {
-
-			for (Agedge_t *a=agfstedge(graf,v); a; a=agnxtedge(graf,a,v)) {
-
-				num_arestas_visitadas = copia_arestas(a, g, i, num_arestas_visitadas);
-
-				if (num_arestas_visitadas < 0)
-					return NULL;
-			}
-		}
-	}
-
-	agclose(graf);
-	agfree(graf,NULL);
-
-	return g;	
+    return g;   
 }
 
 int destroi_grafo(void *g){
@@ -434,6 +452,42 @@ int ja_visitou(vertice *vertices_percorridos, int num_vertices_percorridos, vert
     return 0;
 }
 
+lista componentes(grafo g) {
+    vertice *vertices_percorridos;
+    int num_vertices_percorridos = 0;
+
+    vertices_percorridos = malloc ( n_vertices(g) * sizeof(vertice) );
+
+    while (1) { 
+        vertice v = in(g, vertices_percorridos, num_vertices_percorridos);
+        if (v == NULL) {
+            break;
+        }
+
+        percorre_vertices(v, vertices_percorridos, &num_vertices_percorridos);
+    }
+   
+    free(vertices_percorridos);
+
+    return ( num_vertices_percorridos == (int) n_vertices(g)) ? 1 : 0 ;       
+}
+
+vertice in(grafo g, vertice *percorridos, int num_vertices_percorridos) {
+    int is_in=0;
+
+    for(int i=0; i<g->num_vertices; ++i) {
+        for (int j=0; (j<num_vertices_percorridos) && (is_in==0); ++j) {
+            if (!strcmp(g->vertices[i],percorridos[j])) {
+                is_in = 1;
+            }
+        }
+        if (!is_in) {
+            return g->vertice[i];
+        }
+    }
+    return NULL;
+}
+
 //------------------------------------------------------------------------------
 void percorre_vertices(vertice v, vertice *vertices_percorridos, int *num_vertices_percorridos) {
     
@@ -445,9 +499,6 @@ void percorre_vertices(vertice v, vertice *vertices_percorridos, int *num_vertic
     (*num_vertices_percorridos)++; 
 
     for (int i=0 ; i < v->grau ; ++i) {
-
-    //  printf("a[%d] head %s %p tail %s %p\n", i, v->arestas[i]->head->nome, 
-    //  v->arestas[i]->head, v->arestas[i]->tail->nome, v->arestas[i]->tail);
 
         if ( v == v->arestas[i]->head ) {
        
@@ -464,19 +515,34 @@ void percorre_vertices(vertice v, vertice *vertices_percorridos, int *num_vertic
 //------------------------------------------------------------------------------
 void percorre_vertices_direcionado(vertice v, vertice *vertices_percorridos, int *num_vertices_percorridos) {
     
+    printf("Já visitou? %d\n", ja_visitou(vertices_percorridos, *num_vertices_percorridos, v));
+
     if (ja_visitou(vertices_percorridos, *num_vertices_percorridos, v))
         return;
 
-    printf("nome %s %p grau %d\n", v->nome, v, v->grau);
+    printf("Vértice: nome %s %p grau %d\n", v->nome, v, v->grau);
     vertices_percorridos[*num_vertices_percorridos] = v;
     (*num_vertices_percorridos)++; 
 
+
     for (int i=0 ; i < v->grau ; ++i) {
 
-        printf("a[%d] head %s %p tail %s %p\n", i, v->arestas[i]->head->nome, 
-        v->arestas[i]->head, v->arestas[i]->tail->nome, v->arestas[i]->tail);
+        printf("Antes do if do %s, %d\n", v->nome, i);
 
-        percorre_vertices_direcionado(v->arestas[i]->head, vertices_percorridos, num_vertices_percorridos);
+        if (v->arestas[i] != NULL) {
+            if (v->arestas[i]->tail != NULL) { 
+                if (v->arestas[i]->tail->nome != NULL) { 
+                    printf("%s\n", v->arestas[i]->tail->nome);
+                    if (!strcmp(v->arestas[i]->tail->nome, v->nome)) {
+                        printf("Aresta: a[%d] head %s %p tail %s %p\n", i, v->arestas[i]->head->nome, 
+                            v->arestas[i]->head, v->arestas[i]->tail->nome, v->arestas[i]->tail);
+
+                        percorre_vertices_direcionado(v->arestas[i]->head, vertices_percorridos, num_vertices_percorridos);
+                    }
+                }
+            }
+        }
+        printf("Depois do if\n");
     }
 }
 
@@ -529,8 +595,12 @@ int main(void) {
 
 	printf("direcionado %d\n", direcionado(g));
 
-	printf("conexo %d\n", conexo(g));
+    if (direcionado(g)) {
+       printf("conexo %d\n", fortemente_conexo(g));    
+    } else {
+	   printf("conexo %d\n", conexo(g));
+    }
 
 	return ! destroi_grafo(g);
 
-	}
+}

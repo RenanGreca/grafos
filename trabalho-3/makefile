@@ -40,7 +40,7 @@ CFLAGS  = -O0 -g -std=c99 -lm \
 
 #------------------------------------------------------------------------------
 grafo : grafo.c 
-	$(CC) $(CFLAGS) -o $@ $^ -I /usr/local/include/graphviz -l cgraph 
+	$(CC) $(CFLAGS) -o $@ $^ -I /usr/include/graphviz -l cgraph 
 
 emacs24-dep.png : emacs24-dep.dot
 	dot -v -Tpng $< -o $@
@@ -50,4 +50,4 @@ cidades.png paises.png : %.png : %.dot
 
 #------------------------------------------------------------------------------
 clean :
-	$(RM) exemplo exemplo.o teste teste.o grafo.o *.png
+	$(RM) exemplo exemplo.o teste teste.o grafo.o *.png grafo

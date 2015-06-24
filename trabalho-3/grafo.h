@@ -147,7 +147,7 @@ int direcionado(grafo g);
 //------------------------------------------------------------------------------
 // devolve 1, se g é não direcionado e conexo,
 //      ou 0, caso contrário
-
+// DONE
 int conexo(grafo g); 
 
 //------------------------------------------------------------------------------
@@ -195,7 +195,7 @@ grafo distancias(grafo g);
 //------------------------------------------------------------------------------
 // devolve 1, se g é fortemente conexo,
 //      ou 0, caso contrário
-
+// KIND OF BUT BROKEN
 int fortemente_conexo(grafo g);
 
 //------------------------------------------------------------------------------
