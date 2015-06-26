@@ -128,11 +128,11 @@ vertice *init_vertices(unsigned int num_vertices) {
 	if (!v[0])
 		return NULL;
 
-	for (int i=1; i<num_vertices ; i++) {
+	for (unsigned int i=1; i<num_vertices ; i++) {
 		v[i] = v[i-1] + 1;
 	}
 
-	for (int i=0; i<num_vertices; i++) {
+	for (unsigned int i=0; i<num_vertices; i++) {
 		v[i]->nome[0]='\0';
 		v[i]->arestas = NULL;
 	}
@@ -167,7 +167,7 @@ aresta *init_arestas(unsigned int num_arestas) {
 
 int busca_vertice(vertice *vertices, unsigned int num_vertices, char * nome) {
 
-    for (int i=0; i<num_vertices; i++) {
+    for (unsigned int i=0; i<num_vertices; i++) {
 
         if (!strcmp(nome, vertices[i]->nome)) {
 
@@ -282,7 +282,7 @@ grafo le_grafo(FILE *input) {
 
         g->vertices[num_vertices_visitados]->arestas = (aresta *) malloc (
             (size_t) g->vertices[num_vertices_visitados]->grau * sizeof(aresta));
-        
+
         strcpy(g->vertices[num_vertices_visitados]->nome, agnameof(v));        
         num_vertices_visitados++;
     }
@@ -452,7 +452,7 @@ int ja_visitou(vertice *vertices_percorridos, int num_vertices_percorridos, vert
     return 0;
 }
 
-lista componentes(grafo g) {
+/*lista componentes(grafo g) {
     vertice *vertices_percorridos;
     int num_vertices_percorridos = 0;
 
@@ -486,7 +486,7 @@ vertice in(grafo g, vertice *percorridos, int num_vertices_percorridos) {
         }
     }
     return NULL;
-}
+}*/
 
 //------------------------------------------------------------------------------
 void percorre_vertices(vertice v, vertice *vertices_percorridos, int *num_vertices_percorridos) {
@@ -527,21 +527,20 @@ void percorre_vertices_direcionado(vertice v, vertice *vertices_percorridos, int
 
     for (int i=0 ; i < v->grau ; ++i) {
 
-        printf("Antes do if do %s, %d\n", v->nome, i);
+        printf("Antes do if do %s, %d, %p\n", v->nome, i, v->arestas);
 
         if (v->arestas[i] != NULL) {
             if (v->arestas[i]->tail != NULL) { 
-                if (v->arestas[i]->tail->nome != NULL) { 
-                    printf("%s\n", v->arestas[i]->tail->nome);
-                    if (!strcmp(v->arestas[i]->tail->nome, v->nome)) {
-                        printf("Aresta: a[%d] head %s %p tail %s %p\n", i, v->arestas[i]->head->nome, 
-                            v->arestas[i]->head, v->arestas[i]->tail->nome, v->arestas[i]->tail);
+                printf("%s\n", v->arestas[i]->tail->nome);
+                if (!strcmp(v->arestas[i]->tail->nome, v->nome)) {
+                    printf("Aresta: a[%d] head %s %p tail %s %p\n", i, v->arestas[i]->head->nome, 
+                        v->arestas[i]->head, v->arestas[i]->tail->nome, v->arestas[i]->tail);
 
-                        percorre_vertices_direcionado(v->arestas[i]->head, vertices_percorridos, num_vertices_percorridos);
-                    }
+                    percorre_vertices_direcionado(v->arestas[i]->head, vertices_percorridos, num_vertices_percorridos);
                 }
             }
         }
+            
         printf("Depois do if\n");
     }
 }
