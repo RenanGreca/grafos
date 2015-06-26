@@ -195,7 +195,7 @@ grafo distancias(grafo g);
 //------------------------------------------------------------------------------
 // devolve 1, se g é fortemente conexo,
 //      ou 0, caso contrário
-// KIND OF BUT BROKEN
+// SEEMS DONE //KIND OF BUT BROKEN
 int fortemente_conexo(grafo g);
 
 //------------------------------------------------------------------------------

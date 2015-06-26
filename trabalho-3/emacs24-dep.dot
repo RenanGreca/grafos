@@ -335,7 +335,9 @@ strict digraph "emacs24" {
         "emacs24" -> "libxpm4" [color=blue];
         "emacs24" -> "libxrandr2" [color=blue];
         "emacs24" -> "libxrender1" [color=blue];
-        "hello" -> "world" [color=green];
+        //"emacs24" -> "hello" [color=green];
+        //"hello" -> "world" [color=green];
+        //"world" -> "!!" [color=green];
         "emacs24" [style="setlinewidth(2)"];
         "dpkg" [shape=diamond];
         "fontconfig" [shape=diamond];
