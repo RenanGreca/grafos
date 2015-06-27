@@ -61,9 +61,15 @@ no primeiro_no(lista l) {
 	return ( (l == NULL) ? NULL : l->n );
 }
 
+void prepend(lista l, no n) {
+    no ln = primeiro_no(l);
+    l->n = n;
+    n->prox = ln;
+    l->tam++;
+}
+
 void append(lista l, no n) {
     no ln = primeiro_no(l);
-    printf("%s\n",ln->nome);
     if (ln == NULL) {
         l->n = n;
         l->tam++;
@@ -676,6 +682,71 @@ void escreve_lista_de_grafos(lista l) {
     }
 }
 
+void escreve_lista_de_vertices(lista l) {
+    no n = primeiro_no(l);
+    for (int i=0; i<l->tam; ++i) {
+        vertice v = (vertice) n->conteudo;
+        printf("Nome: %s\n", v->nome);
+        //escreve_grafo(stdout, (grafo) n->conteudo);
+        n = proximo_no(n);
+    }
+}
+
+void visita(vertice v, lista l, vertice *marcas, int *num_marcas) {
+    
+    if (ja_visitou(marcas, *num_marcas, v))
+        return;
+    
+    marcas[*num_marcas] = v;
+    (*num_marcas)++; 
+
+    for (int i=0 ; i < v->grau ; ++i) {
+        
+        //printf("Vertice: %s, %p\n", v->nome, v->arestas[i]  );
+
+        if ( v == v->arestas[i]->tail ) {
+            visita(v->arestas[i]->head, l, marcas, num_marcas);
+        } /*else {
+            visita(v->arestas[i]->head, l, marcas, num_marcas);
+        }*/
+
+    }
+
+    no n = (no) malloc((size_t) sizeof(struct no));
+    n->conteudo = (vertice) v;
+
+    prepend(l, n);
+}
+
+lista ordena(grafo g) {
+    
+    if (!g->direcionado) {
+        printf("Não direcionado!\n");
+        return NULL;
+    }
+
+    lista l = (lista) malloc((size_t) sizeof(struct lista));
+    l->tam = 0;
+
+    vertice *marcas;
+    //vertice *marcas_permanentes;
+    int num_marcas = 0;
+    //int num_marcas_permanentes = 0;
+
+    marcas = malloc ( n_vertices(g) * sizeof(vertice) );
+    //arestas_percorridas = malloc ( g->num_arestas * sizeof(aresta) );
+
+    while(1) {
+        vertice v = in(g, marcas, num_marcas);
+        if (v == NULL) {
+            break;
+        }
+        visita(v, l, marcas, &num_marcas);
+    }
+
+    return l;
+}
+
 int main(void) {
 	
 	grafo g = le_grafo(stdin);
@@ -688,14 +759,19 @@ int main(void) {
 
 	printf("direcionado %d\n", direcionado(g));
 
-    if (direcionado(g)) {
+    /*if (direcionado(g)) {
        printf("conexo %d\n", fortemente_conexo(g));    
     } else {
        printf("conexo %d\n", conexo(g));
+    }*/
+
+    lista l = ordena(g);
+    if (l != NULL) {
+        escreve_lista_de_vertices(l);
     }
 
-    lista l = componentes(g);
-    escreve_lista_de_grafos(l);
+    //lista l = componentes(g);
+    //escreve_lista_de_grafos(l);
 
     return 1;
 
