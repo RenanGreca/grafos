@@ -63,10 +63,17 @@ no primeiro_no(lista l) {
 
 void append(lista l, no n) {
     no ln = primeiro_no(l);
-    while (ln != NULL) {
+    printf("%s\n",ln->nome);
+    if (ln == NULL) {
+        l->n = n;
+        l->tam++;
+        return;
+    }
+
+    while (ln->prox != NULL) {
         ln = proximo_no(ln);
     }
-    ln = n;
+    ln->prox = n;
     l->tam++;
 }
 
@@ -459,6 +466,16 @@ int ja_visitou(vertice *vertices_percorridos, int num_vertices_percorridos, vert
     return 0;
 }
 
+int visitou_aresta(aresta *arestas_percorridas, int num_arestas_percorridas, aresta a) {
+
+    for (int i=0; i<num_arestas_percorridas; ++i) {
+
+        if (arestas_percorridas[i] == a )
+            return 1;
+    }
+    return 0;
+}
+
 vertice in(grafo g, vertice *percorridos, int num_vertices_percorridos) {
     int is_in=0;
 
@@ -476,12 +493,13 @@ vertice in(grafo g, vertice *percorridos, int num_vertices_percorridos) {
     return NULL;
 }
 
-void percorre_componente(vertice v, grafo g, vertice *vertices_percorridos, int *num_vertices_percorridos) {
+void percorre_componente(vertice v, grafo g, vertice *vertices_percorridos, int *num_vertices_percorridos, aresta *arestas_percorridas, int *num_arestas_percorridas) {
 
     if (ja_visitou(vertices_percorridos, *num_vertices_percorridos, v))
         return;
 
     g->vertices[g->num_vertices] = v;
+    printf("%s\n",g->vertices[g->num_vertices]->nome);
     g->num_vertices++;
 
     vertices_percorridos[*num_vertices_percorridos] = v;
@@ -489,16 +507,24 @@ void percorre_componente(vertice v, grafo g, vertice *vertices_percorridos, int 
 
     for (int i=0 ; i < v->grau ; ++i) {
 
+        if( visitou_aresta(arestas_percorridas, 
+                *num_arestas_percorridas, v->arestas[i])) {
+            return;
+        }
+
+        arestas_percorridas[*num_arestas_percorridas] = v->arestas[i];
+        (*num_arestas_percorridas)++; 
+
         g->arestas[g->num_arestas] = v->arestas[i];
         g->num_arestas++;
 
-        //printf("Vertice: %s, grau %d, iter %d\n", v->nome, v->grau, i);
-        //printf("Aresta: head %s tail %s\n", v->arestas[i]->head, v->arestas[i]->tail);
+        printf("Vertice: %s, grau %d, iter %d\n", v->nome, v->grau, i);
+        printf("Aresta: head %s tail %s\n", v->arestas[i]->head, v->arestas[i]->tail);
 
         if ( v == v->arestas[i]->head ) {
-            percorre_componente(v->arestas[i]->tail, g, vertices_percorridos, num_vertices_percorridos);
+            percorre_componente(v->arestas[i]->tail, g, vertices_percorridos, num_vertices_percorridos, arestas_percorridas, num_arestas_percorridas);
         } else if ( v == v->arestas[i]->tail ) {
-            percorre_componente(v->arestas[i]->head, g, vertices_percorridos, num_vertices_percorridos);
+            percorre_componente(v->arestas[i]->head, g, vertices_percorridos, num_vertices_percorridos, arestas_percorridas, num_arestas_percorridas);
         }
     }
 
@@ -509,9 +535,12 @@ lista componentes(grafo g) {
     l->tam = 0;
 
     vertice *vertices_percorridos;
+    aresta *arestas_percorridas;
     int num_vertices_percorridos = 0;
+    int num_arestas_percorridas = 0;
 
     vertices_percorridos = malloc ( n_vertices(g) * sizeof(vertice) );
+    arestas_percorridas = malloc (g->num_arestas * sizeof(aresta) );
 
     while (1) { 
         vertice v = in(g, vertices_percorridos, num_vertices_percorridos);
@@ -532,10 +561,12 @@ lista componentes(grafo g) {
 
         strcpy(gr->nome, "componente");
 
-        percorre_componente(v, gr, vertices_percorridos, &num_vertices_percorridos);
+        percorre_componente(v, gr, vertices_percorridos, &num_vertices_percorridos, arestas_percorridas, &num_arestas_percorridas);
+
+        escreve_grafo(stdout, gr);
 
         no n = (no) malloc((size_t) sizeof(struct no));
-        n->conteudo = gr;
+        n->conteudo = (grafo) gr;
         printf("Nome n: %s\n", ((grafo)n->conteudo)->nome);
         append(l, n);
 
@@ -543,6 +574,7 @@ lista componentes(grafo g) {
     }
 
     free(vertices_percorridos);
+    free(arestas_percorridas);
 
     return l;
     //return ( num_vertices_percorridos == (int) n_vertices(g)) ? 1 : 0 ;       
