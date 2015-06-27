@@ -486,6 +486,7 @@ vertice in(grafo g, vertice *percorridos, int num_vertices_percorridos) {
     int is_in=0;
 
     for(int i=0; i<g->num_vertices; ++i) {
+        is_in = 0;
         for (int j=0; (j<num_vertices_percorridos) && (is_in==0); ++j) {
             if (!strcmp(g->vertices[i],percorridos[j])) {
                 is_in = 1;
@@ -494,7 +495,7 @@ vertice in(grafo g, vertice *percorridos, int num_vertices_percorridos) {
         if (!is_in) {
             return g->vertices[i];
         }
-    }
+    
     printf("Não achou\n");
     return NULL;
 }
@@ -692,30 +693,54 @@ void escreve_lista_de_vertices(lista l) {
     }
 }
 
-void visita(vertice v, lista l, vertice *marcas, int *num_marcas) {
+void remove_marca(vertice *marcas, int num_marcas, vertice v) {
+    for (int i; i<num_marcas; ++i) {
+        if(marcas[i] == v) {
+            marcas[i] = NULL;
+            printf("Marca removida %s\n", v->nome);
+
+            return;
+        }
+    }
+}
+
+int visita(vertice v, lista l, vertice *marcas_temp, int *num_marcas_temp, vertice *marcas_perm, int *num_marcas_perm) {
     
-    if (ja_visitou(marcas, *num_marcas, v))
-        return;
+    if (ja_visitou(marcas_temp, *num_marcas_temp, v))
+        return 0; // não é grafo acíclico
+
+    if (ja_visitou(marcas_perm, *num_marcas_perm, v))
+        return 1;
     
-    marcas[*num_marcas] = v;
-    (*num_marcas)++; 
+    marcas_temp[*num_marcas_temp] = v;
+    (*num_marcas_temp)++; 
 
     for (int i=0 ; i < v->grau ; ++i) {
         
-        //printf("Vertice: %s, %p\n", v->nome, v->arestas[i]  );
-
-        if ( v == v->arestas[i]->tail ) {
-            visita(v->arestas[i]->head, l, marcas, num_marcas);
-        } /*else {
-            visita(v->arestas[i]->head, l, marcas, num_marcas);
-        }*/
-
+        printf("Vertice: %s, grau %d, %p\n", v->nome, v->grau, v->arestas[i]  );
+        
+        if (v->arestas[i] != NULL) {
+            printf("Aresta: head %s tail %s\n", v->arestas[i]->head->nome, v->arestas[i]->tail->nome);
+            if ( v == v->arestas[i]->tail ) {
+                int a = visita(v->arestas[i]->head, l, marcas_temp, num_marcas_temp,
+                                                       marcas_perm, num_marcas_perm);
+                if (a == 0) {
+                    return 0;
+                }
+            }
+        }
     }
+
+    marcas_perm[*num_marcas_perm] = v;
+    (*num_marcas_perm)++;
+
+    remove_marca(marcas_temp, *num_marcas_temp, v);
 
     no n = (no) malloc((size_t) sizeof(struct no));
     n->conteudo = (vertice) v;
 
     prepend(l, n);
+    return 1;
 }
 
 lista ordena(grafo g) {
@@ -728,20 +753,25 @@ lista ordena(grafo g) {
     lista l = (lista) malloc((size_t) sizeof(struct lista));
     l->tam = 0;
 
-    vertice *marcas;
-    //vertice *marcas_permanentes;
-    int num_marcas = 0;
-    //int num_marcas_permanentes = 0;
+    vertice *marcas_temp;
+    vertice *marcas_perm;
+    int num_marcas_temp = 0;
+    int num_marcas_perm = 0;
 
-    marcas = malloc ( n_vertices(g) * sizeof(vertice) );
-    //arestas_percorridas = malloc ( g->num_arestas * sizeof(aresta) );
+    marcas_temp = malloc ( n_vertices(g) * sizeof(vertice) );
+    marcas_perm = malloc ( n_vertices(g) * sizeof(vertice) );
 
     while(1) {
-        vertice v = in(g, marcas, num_marcas);
+        vertice v = in(g, marcas_perm, num_marcas_perm);
         if (v == NULL) {
             break;
         }
-        visita(v, l, marcas, &num_marcas);
+        int a =  visita(v, l, marcas_temp, &num_marcas_temp,
+                              marcas_perm, &num_marcas_perm);
+        if (a == 0) {
+            // Não é um grafo acíclico
+            return NULL;
+        }
     }
 
     return l;
