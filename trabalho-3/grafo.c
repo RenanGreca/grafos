@@ -88,6 +88,9 @@ void percorre_vertices_direcionado(vertice v, vertice *vertices_percorridos, int
 
 int visita(grafo g, vertice v, lista l, int *marcas_temp, int *marcas_perm);
 
+void arestas_do_vertice(grafo g, vertice v, aresta *a);
+aresta aresta_mais_barata(grafo g, grafo c);
+
 // LISTA ------------------------------------------------------------------------------
 no primeiro_no(lista l) {
 	return ( (l == NULL) ? NULL : l->n );
@@ -778,6 +781,7 @@ grafo remove_vertices(grafo g, int *corte) {
 
 lista blocos(grafo g) {
     if (g->direcionado) {
+        printf("Função blocos não pode ser executada pois grafo é direcionado!\n");
         return NULL;
     }
 
@@ -897,6 +901,7 @@ int visita(grafo g, vertice v, lista l, int *marcas_temp, int *marcas_perm) {
     int j = indice(g, v);
 
     if (marcas_temp[j])
+        printf("Função ordena não pode ser executada pois grafo não é acíclico\n");
         return 0; // não é grafo acíclico
 
     if (marcas_perm[j])
@@ -928,7 +933,7 @@ int visita(grafo g, vertice v, lista l, int *marcas_temp, int *marcas_perm) {
 lista ordena(grafo g) {
     
     if (!g->direcionado) {
-        printf("Não direcionado!\n");
+        printf("Função ordena não pode ser executada pois grafo não é direcionado!\n");
         return NULL;
     }
 
@@ -947,12 +952,101 @@ lista ordena(grafo g) {
         }
         int a =  visita(g, v, l, marcas_temp, marcas_perm);
         if (a == 0) {
+            printf("Função ordena não pode ser executada pois grafo não é acíclico!\n");
             // Não é um grafo acíclico
             return NULL;
         }
     }
 
     return l;
+}
+
+aresta aresta_mais_barata(grafo g, grafo c) {
+    aresta arestas[g->num_arestas];
+    int n_arestas = 0;
+
+    for (unsigned int i=0; i<c->num_vertices; ++i) {
+        vertice v = c->vertices[i];
+        aresta a[v->grau];
+        arestas_do_vertice(g, v, a);
+
+        long menor_peso = infinito;
+        aresta barata;
+        for (int j=0; j<v->grau; ++j) {
+            if (a[j]->peso < menor_peso) {
+                menor_peso = a[j]->peso;
+                barata = a[j];
+            }
+        }
+
+        arestas[n_arestas] = barata;
+        n_arestas++;        
+
+    }
+
+    long menor_peso = infinito;
+    aresta barata;
+  
+    for (int i=0; i<n_arestas; ++i) {
+        if (arestas[i]->peso < menor_peso) {
+            menor_peso = arestas[i]->peso;
+            barata = arestas[i];
+        }
+    }
+    return barata;
+}
+
+grafo arvore_geradora_minima(grafo g) {
+    if (direcionado(g)) {
+        printf("Função árvore geradora mínima não pode ser executada pois grafo é direcionado!\n");
+        return NULL;
+    }
+    if (!conexo(g)) {
+        printf("Função árvore geradora mínima não pode ser executada pois grafo não é conexo!\n");
+        return NULL;
+    }
+
+    int marcas_a[g->num_arestas];
+    memset(marcas_a, 0, (g->num_arestas)*sizeof(int));
+
+    grafo gr = (grafo) malloc((size_t) sizeof(struct grafo));
+    gr = init_grafo();
+    gr->direcionado = direcionado(g);
+    gr->tem_peso = g->tem_peso;
+
+    gr->num_vertices = g->num_vertices;
+    gr->num_arestas = 0;    
+    
+    gr->vertices = g->vertices;
+    gr->arestas = init_arestas(g->num_arestas);
+
+    strcpy(gr->nome, "árvore");
+
+    lista l = componentes(gr);
+    int num_componentes = l->tam;
+
+    while(num_componentes > 1) {
+        no n = primeiro_no(l);
+        for (int i=0; i<l->tam; ++i) {
+            grafo c = (grafo) n->conteudo;
+            
+            aresta barata = aresta_mais_barata(g, c);
+            int k = indice_a(g, barata);
+
+            if (!marcas_a[k]) {
+                gr->arestas[gr->num_arestas] = barata;
+                gr->num_arestas++;
+                marcas_a[k] = 1;
+            }
+
+            n = proximo_no(n);
+        }
+
+        l = componentes(gr);
+        num_componentes = l->tam;
+    }
+
+    return gr;
 }
 
 int main(void) {
@@ -979,8 +1073,6 @@ int main(void) {
     l = ordena(g);
     if (l != NULL) {
         escreve_lista_de_vertices(l);
-    } else {
-        printf("Função ordena não pode ser executada pois grafo não é direcionado ou contém laços\n");
     }
 
     printf("-------------------------------------\n");
@@ -988,8 +1080,6 @@ int main(void) {
     l = blocos(g);
     if (l != NULL) {
         escreve_lista_de_grafos(l);
-    } else {
-        printf("Função blocos não pode ser executada pois grafo é direcionado\n");
     }
 
     printf("-------------------------------------\n");
@@ -997,6 +1087,13 @@ int main(void) {
     l = componentes(g);
     if (l != NULL) {
         escreve_lista_de_grafos(l);
+    }
+
+    printf("-------------------------------------\n");
+    printf("Árvore Geradora Mínima:\n");
+    grafo arvore = arvore_geradora_minima(g);
+    if (arvore != NULL) {
+        escreve_grafo(stdout, arvore);
     }
 
     //lista l = componentes(g);
