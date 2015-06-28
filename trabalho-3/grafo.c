@@ -584,7 +584,73 @@ lista componentes(grafo g) {
     free(arestas_percorridas);
 
     return l;
-    //return ( num_vertices_percorridos == (int) n_vertices(g)) ? 1 : 0 ;       
+}
+
+int indice(grafo g, vertice v) {
+    for (int i = 0; i<g->num_vertices; ++i) {
+        if (g->vertices[i] == v) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void achaCortes(grafo g, vertice pai, vertice v, int *visitado, int *profundidade, int *lowpoint, int *corte, int p) {
+    int i = indice(g, v);
+
+    if (i < 0) {
+        return;
+    }
+
+
+    visitado[i] = 1;
+    profundidade[i] = p;
+    lowpoint[i] = p;
+
+    int num_filhos = 0;
+    corte[i] = 0;
+
+    for (int j = 0; j < v->grau; ++j) {
+        int k;
+        if ( v == v->arestas[j]->head ) {
+            k = indice(g, v->arestas[j]->tail);
+        } else {
+            k = indice(g, v->arestas[j]->head);
+        }
+
+        if (!visitado[k]) {
+            achaCortes(g, v, g->vertices[k], visitado, profundidade, lowpoint, corte, p+1);
+            num_filhos++;
+            if (lowpoint[k] >= profundidade[i]) {
+                corte[i] = 1;
+            }
+            lowpoint[i] = (lowpoint[i] < lowpoint[k] ? lowpoint[i] : lowpoint[k]);
+        } else if (g->vertices[k] != pai) {
+            lowpoint[i] = (lowpoint[i] < profundidade[k] ? lowpoint[i] : profundidade[k]);
+        }
+    }
+    if ((pai != NULL && corte[i]) || (pai == NULL && num_filhos > 1)) {
+        printf("%s é um vértice de corte\n", v->nome);
+    }
+
+}
+
+lista blocos(grafo g) {
+    if (g->direcionado) {
+        return NULL;
+    }
+
+    lista l = (lista) malloc((size_t) sizeof(struct lista));
+    l->tam = 0;
+
+    int corte[g->num_vertices];
+    int visitado[g->num_vertices];
+    memset(visitado, 0, (g->num_vertices)*sizeof(int));
+    int profundidade[g->num_vertices];
+    int lowpoint[g->num_vertices];
+    int p = 0;
+
+    achaCortes(g, NULL, g->vertices[0], visitado, profundidade, lowpoint, corte, p);
 }
 
 //------------------------------------------------------------------------------
@@ -781,16 +847,16 @@ int main(void) {
 
 	//escreve_grafo(stdout, g);
 	
-	printf("nome %s\n", nome(g));
+	printf("Nome: %s\n", nome(g));
 	
-	printf("n_vertices %d\n", n_vertices(g));
+	printf("n_vertices: %d\n", n_vertices(g));
 
-	printf("direcionado %d\n", direcionado(g));
+	printf("direcionado: %d\n", direcionado(g));
 
     if (direcionado(g)) {
-       printf("conexo %d\n", fortemente_conexo(g));    
+       printf("conexo: %d\n", fortemente_conexo(g));    
     } else {
-       printf("conexo %d\n", conexo(g));
+       printf("conexo: %d\n", conexo(g));
     }
 
     lista l = ordena(g);
@@ -799,6 +865,11 @@ int main(void) {
     } else {
         printf("Função ordena não pode ser executada pois grafo não é direcionado ou contém laços\n");
     }
+
+    l = blocos(g);
+    /*if (l != NULL) {
+
+    }*/
 
     //lista l = componentes(g);
     //escreve_lista_de_grafos(l);
