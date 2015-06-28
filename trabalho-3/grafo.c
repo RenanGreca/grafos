@@ -69,16 +69,19 @@ void prepend(lista l, no n) {
 }
 
 void append(lista l, no n) {
-    no ln = primeiro_no(l);
-    if (ln == NULL) {
+    if (l->tam == 0) {
         l->n = n;
         l->tam++;
         return;
     }
 
-    while (ln->prox != NULL) {
+    no ln = primeiro_no(l);
+
+    int i;
+    for (i=0; i<l->tam-1; ++i) {  
         ln = proximo_no(ln);
     }
+
     ln->prox = n;
     l->tam++;
 }
@@ -123,8 +126,12 @@ int indice(grafo g, vertice v) {
 
 int indice_a(grafo g, aresta a) {
     for (unsigned int i = 0; i<g->num_arestas; ++i) {
-        if (g->arestas[i] == a) {
-            return i;
+        if (g->arestas[i] != NULL) {
+            //printf("Aresta 1: %s - %s\n", g->arestas[i]->head->nome, g->arestas[i]->tail->nome);
+            //printf("Aresta 2: %s - %s\n", a->head->nome, a->tail->nome);
+            if (g->arestas[i] == a) {
+                return i;
+            }
         }
     }
     return -1;
@@ -466,9 +473,9 @@ grafo escreve_grafo(FILE *output, grafo g) {
 
 void escreve_lista_de_grafos(lista l) {
     no n = primeiro_no(l);
+    printf("%d\n", l->tam);
     for (int i=0; i<l->tam; ++i) {
         grafo g = (grafo) n->conteudo;
-        printf("Nome: %s\n", g->nome);
         escreve_grafo(stdout, (grafo) n->conteudo);
         n = proximo_no(n);
     }
@@ -557,34 +564,31 @@ vertice in(grafo g, vertice *percorridos, int num_vertices_percorridos) {
 void percorre_componente(grafo g, vertice v, grafo comp, int *marcas_v, int *marcas_a) {
 
     int j = indice(g, v);
-    printf("%s - %d\n", v->nome, j);
 
+    printf("%s\n", v->nome);
+
+    if (j < 0) 
+        return;
     if (marcas_v[j])
         return;
     
-    comp->vertices[g->num_vertices] = v;
+    comp->vertices[comp->num_vertices] = v;
     comp->num_vertices++;
 
     marcas_v[j] = 1;
 
-    /*vertices_percorridos[*num_vertices_percorridos] = v;
-    (*num_vertices_percorridos)++;*/
-
     for (int i=0 ; i < v->grau ; ++i) {
-        int k = indice_a(g, v->arestas[i]);
-        printf("1 Vertice: %s, grau %d, iter %d\n", v->nome, v->grau, i);
-        printf("%d\n", marcas_a[k]);
-        if (marcas_a[k])
-            continue;
-
-        comp->arestas[comp->num_arestas] = g->arestas[k];
-        comp->num_arestas++;
-
-        marcas_a[k] = 1;
-
-        printf("2 Vertice: %s, grau %d, iter %d\n", v->nome, v->grau, i);
         if (v->arestas[i] != NULL) {
-            printf("Aresta: head %p tail %p\n", v->arestas[i]->head, v->arestas[i]->tail);
+            int k = indice_a(g, v->arestas[i]);
+            if (k < 0)
+                continue;
+            if (marcas_a[k])
+                continue;
+
+            comp->arestas[comp->num_arestas] = g->arestas[k];
+            comp->num_arestas++;
+
+            marcas_a[k] = 1;
 
             if ( v == v->arestas[i]->head ) {
                 percorre_componente(g, v->arestas[i]->tail, comp, marcas_v, marcas_a);
@@ -593,10 +597,8 @@ void percorre_componente(grafo g, vertice v, grafo comp, int *marcas_v, int *mar
             }
 
         }
-        printf("3 Vertice: %s, grau %d, iter %d\n", v->nome, v->grau, i);
     }
 
-    printf("4 Vertice: %s, grau %d\n", v->nome, v->grau);
 }
 
 lista componentes(grafo g) {
@@ -637,16 +639,11 @@ lista componentes(grafo g) {
         strcpy(gr->nome, "componente");
 
         percorre_componente(g, v, gr, marcas_v, marcas_a);
-        printf("Oi\n");
-
-        escreve_grafo(stdout, gr);
 
         no n = (no) malloc((size_t) sizeof(struct no));
         n->conteudo = (grafo) gr;
-        printf("Nome n: %s\n", ((grafo)n->conteudo)->nome);
         append(l, n);
 
-        printf("Nome l: %s\n", ((grafo) ((no) l->n)->conteudo)->nome);
     }
 
     return l;
@@ -689,7 +686,6 @@ void acha_cortes(grafo g, vertice pai, vertice v, int *visitado, int *profundida
         }
     }
     if ((pai != NULL && is_corte) || (pai == NULL && num_filhos > 1)) {
-        printf("%s é um vértice de corte\n", v->nome);
         corte[i] = 1;
     }
 
@@ -918,13 +914,13 @@ int main(void) {
         printf("Função ordena não pode ser executada pois grafo não é direcionado ou contém laços\n");
     }
 
-    l = blocos(g);
+    /*l = blocos(g);
     if (l != NULL) {
         printf("Blocos:\n");
         escreve_lista_de_grafos(l);
     } else {
         printf("Função blocos não pode ser executada pois grafo é direcionado\n");
-    }
+    }*/
 
     l = componentes(g);
     if (l != NULL) {
