@@ -54,7 +54,39 @@ struct grafo {
 
 };
 
+void prepend(lista l, no n);
+void append(lista l, no n);
+int indice(grafo g, vertice v);
+int indice_a(grafo g, aresta a);
+int ja_visitou(vertice *vertices_percorridos, int num_vertices_percorridos, vertice v);
+int visitou_aresta(aresta *arestas_percorridas, int num_arestas_percorridas, aresta a);
+vertice vertice_not_in(grafo g, int *marcas);
+
+grafo init_grafo(void);
+vertice *init_vertices(unsigned int num_vertices);
+aresta *init_arestas(unsigned int num_arestas);
+
+int busca_vertice(vertice *vertices, unsigned int num_vertices, char *nome);
+int busca_aresta(aresta *arestas, unsigned int num_arestas, char *nome_head, char *nome_tail);
+
 int copia_arestas(Agedge_t *a, grafo g, int i, int *num_arestas_visitadas); 
+
+void escreve_vertices(vertice *vertices, unsigned int n_vertices, FILE *output);
+void escreve_arestas(aresta *arestas, unsigned int n_arestas, int direcionado, int tem_peso, FILE *output);
+
+void escreve_lista_de_grafos(lista l);
+void escreve_lista_de_vertices(lista l);
+
+vertice in(grafo g, vertice *percorridos, int num_vertices_percorridos);
+void percorre_componente(grafo g, vertice v, grafo comp, int *marcas_v, int *marcas_a);
+
+void acha_cortes(grafo g, vertice pai, vertice v, int *visitado, int *profundidade, int *lowpoint, int *corte, int p);
+grafo remove_vertices(grafo g, int *corte);
+
+void percorre_vertices(vertice v, vertice *vertices_percorridos, int *num_vertices_percorridos);
+void percorre_vertices_direcionado(vertice v, vertice *vertices_percorridos, int *num_vertices_percorridos);
+
+int visita(grafo g, vertice v, lista l, int *marcas_temp, int *marcas_perm);
 
 // LISTA ------------------------------------------------------------------------------
 no primeiro_no(lista l) {
@@ -118,7 +150,7 @@ int direcionado(grafo g) {
 int indice(grafo g, vertice v) {
     for (unsigned int i = 0; i<g->num_vertices; ++i) {
         if (g->vertices[i] == v) {
-            return i;
+            return (int) i;
         }
     }
     return -1;
@@ -130,7 +162,7 @@ int indice_a(grafo g, aresta a) {
             //printf("Aresta 1: %s - %s\n", g->arestas[i]->head->nome, g->arestas[i]->tail->nome);
             //printf("Aresta 2: %s - %s\n", a->head->nome, a->tail->nome);
             if (g->arestas[i] == a) {
-                return i;
+                return (int) i;
             }
         }
     }
@@ -164,7 +196,6 @@ vertice vertice_not_in(grafo g, int *marcas) {
             return g->vertices[i];
         }
     }
-    printf("Não achou 2\n");
     return NULL;
 }
 
@@ -224,11 +255,11 @@ aresta *init_arestas(unsigned int num_arestas) {
     if (!a[0])
         return NULL;
 
-    for (int i=1; i<num_arestas ; i++) {
+    for (unsigned int i=1; i<num_arestas ; i++) {
         a[i] = a[i-1] + 1;
     }
 
-    for (int i=0; i<num_arestas; i++) {
+    for (unsigned int i=0; i<num_arestas; i++) {
         a[i]->peso = 0.0;
         a[i]->tail = NULL;
         a[i]->head = NULL;
@@ -245,7 +276,7 @@ int busca_vertice(vertice *vertices, unsigned int num_vertices, char * nome) {
 
         if (!strcmp(nome, vertices[i]->nome)) {
 
-            return i;
+            return (int) i;
         }
     }
 
@@ -254,7 +285,7 @@ int busca_vertice(vertice *vertices, unsigned int num_vertices, char * nome) {
 
 int busca_aresta(aresta *arestas, unsigned int num_arestas, char *nome_head, char *nome_tail) {
   
-    for (int i=0; i<num_arestas; i++) {
+    for (unsigned int i=0; i<num_arestas; i++) {
         
 		if (arestas[i]->head== NULL) {
    
@@ -269,7 +300,7 @@ int busca_aresta(aresta *arestas, unsigned int num_arestas, char *nome_head, cha
         if (    !strcmp( nome_head, arestas[i]->head->nome) &&
                 !strcmp( nome_tail, arestas[i]->tail->nome) ) {
    
-            return i;  
+            return (int) i;  
         }
 
     }
@@ -285,7 +316,7 @@ int copia_arestas(Agedge_t *a, grafo g, int num_vertices_visitados, int *num_are
     int a_pos;
 
 
-    if ( ( a_pos = busca_aresta(g->arestas, *num_arestas_visitadas, agnameof(aghead(a)), 
+    if ( ( a_pos = busca_aresta(g->arestas, (unsigned int) *num_arestas_visitadas, agnameof(aghead(a)), 
                 agnameof(agtail(a)) ) ) < 0 ) {
 
         if ( !strcmp(g->vertices[num_vertices_visitados]->nome, agnameof(aghead(a))) ) {
@@ -473,9 +504,8 @@ grafo escreve_grafo(FILE *output, grafo g) {
 
 void escreve_lista_de_grafos(lista l) {
     no n = primeiro_no(l);
-    printf("%d\n", l->tam);
     for (int i=0; i<l->tam; ++i) {
-        grafo g = (grafo) n->conteudo;
+        //grafo g = (grafo) n->conteudo;
         escreve_grafo(stdout, (grafo) n->conteudo);
         n = proximo_no(n);
     }
@@ -557,15 +587,12 @@ vertice in(grafo g, vertice *percorridos, int num_vertices_percorridos) {
             return g->vertices[i];
         }
     }
-    printf("Não achou\n");
     return NULL;
 }
 
 void percorre_componente(grafo g, vertice v, grafo comp, int *marcas_v, int *marcas_a) {
 
     int j = indice(g, v);
-
-    printf("%s\n", v->nome);
 
     if (j < 0) 
         return;
@@ -691,21 +718,47 @@ void acha_cortes(grafo g, vertice pai, vertice v, int *visitado, int *profundida
 
 }
 
-void remove_vertices(grafo g, int *corte) {
+grafo remove_vertices(grafo g, int *corte) {
+
+    grafo gr = (grafo) malloc((size_t) sizeof(struct grafo));
+    gr = init_grafo();
+    gr->direcionado = direcionado(g);
+    gr->tem_peso = g->tem_peso;
+
+    gr->num_vertices = 0;
+    gr->num_arestas = 0;    
+    
+    gr->vertices = init_vertices(g->num_vertices);
+    gr->arestas = init_arestas(g->num_arestas);
+
+    strcpy(gr->nome, "bloco");
+
     for (unsigned int i=0; i<g->num_vertices; ++i) {
-        //printf("%s é corte? %d\n", g->vertices[i], corte[i]);
-        if (corte[i]) {
-            for (unsigned int j=0; j<g->num_arestas; ++j) {
-                if (g->arestas[j] != NULL) {
-                    if ((g->arestas[j]->head == g->vertices[i]) ||
-                        (g->arestas[j]->tail == g->vertices[i])) {
-                        g->arestas[j] = NULL;
-                    }
-                }
-            }
-            g->vertices[i] = NULL;
+        if (!corte[i]) {
+            gr->vertices[gr->num_vertices] = g->vertices[i];
+            gr->num_vertices++;
         }
     }
+
+    for (unsigned int k=0; k<g->num_arestas; ++k) {
+        
+        int i = indice(g, g->arestas[k]->head);
+        int j = indice(g, g->arestas[k]->tail);
+
+        if (!corte[i] && !corte[j]) {
+            gr->arestas[gr->num_arestas] = g->arestas[k];
+            gr->num_arestas++;
+        }
+
+        /*if (g->arestas[j] != NULL) {
+            if ((g->arestas[j]->head == g->vertices[i]) ||
+                (g->arestas[j]->tail == g->vertices[i])) {
+                g->arestas[j] = NULL;
+            }
+        }*/
+    }
+
+    return gr;
 }
 
 lista blocos(grafo g) {
@@ -728,14 +781,14 @@ lista blocos(grafo g) {
 
     acha_cortes(g, NULL, g->vertices[0], visitado, profundidade, lowpoint, corte, p);
 
-    remove_vertices(g, corte);
+    grafo gr = remove_vertices(g, corte);
 
-    no n = (no) malloc((size_t) sizeof(struct no));
-    n->conteudo = g;
+    /*no n = (no) malloc((size_t) sizeof(struct no));
+    n->conteudo = gr;
     l->n = n;
-    l->tam++;
+    l->tam++;*/
 
-    return l;
+    return componentes(gr);
 }
 
 // FUNÇÕES PARA CONEXO
@@ -906,25 +959,28 @@ int main(void) {
        printf("conexo: %d\n", conexo(g));
     }
 
+    printf("-------------------------------------\n");
+    printf("Ordena:\n");
     l = ordena(g);
     if (l != NULL) {
-        printf("Ordena:\n");
         escreve_lista_de_vertices(l);
     } else {
         printf("Função ordena não pode ser executada pois grafo não é direcionado ou contém laços\n");
     }
 
-    /*l = blocos(g);
+    printf("-------------------------------------\n");
+    printf("Blocos:\n");
+    l = blocos(g);
     if (l != NULL) {
-        printf("Blocos:\n");
         escreve_lista_de_grafos(l);
     } else {
         printf("Função blocos não pode ser executada pois grafo é direcionado\n");
-    }*/
+    }
 
+    printf("-------------------------------------\n");
+    printf("Componentes:\n");
     l = componentes(g);
     if (l != NULL) {
-        printf("Componentes:\n");
         escreve_lista_de_grafos(l);
     }
 
