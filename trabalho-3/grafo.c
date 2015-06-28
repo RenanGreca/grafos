@@ -488,14 +488,14 @@ vertice in(grafo g, vertice *percorridos, int num_vertices_percorridos) {
     for(int i=0; i<g->num_vertices; ++i) {
         is_in = 0;
         for (int j=0; (j<num_vertices_percorridos) && (is_in==0); ++j) {
-            if (!strcmp(g->vertices[i],percorridos[j])) {
+            if (!strcmp(g->vertices[i]->nome,percorridos[j]->nome)) {
                 is_in = 1;
             }
         }
         if (!is_in) {
             return g->vertices[i];
         }
-    
+    }
     printf("Não achou\n");
     return NULL;
 }
