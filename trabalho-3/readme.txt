@@ -33,6 +33,8 @@ GRR20114506 - Renan Domingos Merlin Greca
 		Funciona de maneira similar à conexo(), mas leva em consideração a direcionalidade de g.
 
 	3.3 - arvore_geradora_minima(grafo g)
+		Esta função retorna a árvore geradora mínima de g.
+		Para isso, foi usado um algoritmo que remove as arestas de g e as adiciona a medida que são encontrados os caminhos mais baratos. Esse algoritmo é baseado no de Borůvka (1926).
 
 	3.4 - componentes(grafo g)
 		Esta função retorna os componentes de g como uma lista de grafos.
