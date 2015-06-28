@@ -590,6 +590,18 @@ vertice in(grafo g, vertice *percorridos, int num_vertices_percorridos) {
     return NULL;
 }
 
+void arestas_do_vertice(grafo g, vertice v, aresta *a) {
+    int j=0;
+    for (unsigned int i=0; i<g->num_arestas; ++i) {
+        if (g->arestas[i] != NULL && g->arestas[i] != NULL) {
+            if (g->arestas[i]->head == v || g->arestas[i]->tail == v) {
+                a[j] = g->arestas[i];
+                j++;
+            }
+        }
+    }
+}
+
 void percorre_componente(grafo g, vertice v, grafo comp, int *marcas_v, int *marcas_a) {
 
     int j = indice(g, v);
@@ -604,23 +616,26 @@ void percorre_componente(grafo g, vertice v, grafo comp, int *marcas_v, int *mar
 
     marcas_v[j] = 1;
 
+    aresta arestas[v->grau];
+    arestas_do_vertice(g, v, arestas);
+
     for (int i=0 ; i < v->grau ; ++i) {
-        if (v->arestas[i] != NULL) {
-            int k = indice_a(g, v->arestas[i]);
+        if (arestas[i] != NULL) {
+            int k = indice_a(g, arestas[i]);
             if (k < 0)
                 continue;
             if (marcas_a[k])
                 continue;
 
-            comp->arestas[comp->num_arestas] = g->arestas[k];
+            comp->arestas[comp->num_arestas] = arestas[i];
             comp->num_arestas++;
 
             marcas_a[k] = 1;
 
-            if ( v == v->arestas[i]->head ) {
-                percorre_componente(g, v->arestas[i]->tail, comp, marcas_v, marcas_a);
-            } else if ( v == v->arestas[i]->tail ) {
-                percorre_componente(g, v->arestas[i]->head, comp, marcas_v, marcas_a);
+            if ( v == arestas[i]->head ) {
+                percorre_componente(g, arestas[i]->tail, comp, marcas_v, marcas_a);
+            } else if ( v == arestas[i]->tail ) {
+                percorre_componente(g, arestas[i]->head, comp, marcas_v, marcas_a);
             }
 
         }
