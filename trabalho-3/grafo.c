@@ -697,8 +697,6 @@ void remove_marca(vertice *marcas, int num_marcas, vertice v) {
     for (int i; i<num_marcas; ++i) {
         if(marcas[i] == v) {
             marcas[i] = NULL;
-            printf("Marca removida %s\n", v->nome);
-
             return;
         }
     }
@@ -717,10 +715,10 @@ int visita(vertice v, lista l, vertice *marcas_temp, int *num_marcas_temp, verti
 
     for (int i=0 ; i < v->grau ; ++i) {
         
-        printf("Vertice: %s, grau %d, %p\n", v->nome, v->grau, v->arestas[i]  );
+        //printf("Vertice: %s, grau %d, %p\n", v->nome, v->grau, v->arestas[i]  );
         
         if (v->arestas[i] != NULL) {
-            printf("Aresta: head %s tail %s\n", v->arestas[i]->head->nome, v->arestas[i]->tail->nome);
+            //printf("Aresta: head %s tail %s\n", v->arestas[i]->head->nome, v->arestas[i]->tail->nome);
             if ( v == v->arestas[i]->tail ) {
                 int a = visita(v->arestas[i]->head, l, marcas_temp, num_marcas_temp,
                                                        marcas_perm, num_marcas_perm);
@@ -789,15 +787,17 @@ int main(void) {
 
 	printf("direcionado %d\n", direcionado(g));
 
-    /*if (direcionado(g)) {
+    if (direcionado(g)) {
        printf("conexo %d\n", fortemente_conexo(g));    
     } else {
        printf("conexo %d\n", conexo(g));
-    }*/
+    }
 
     lista l = ordena(g);
     if (l != NULL) {
         escreve_lista_de_vertices(l);
+    } else {
+        printf("Função ordena não pode ser executada pois grafo não é direcionado ou contém laços\n");
     }
 
     //lista l = componentes(g);

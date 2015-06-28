@@ -170,7 +170,7 @@ lista blocos(grafo g);
 //------------------------------------------------------------------------------
 // devolve uma lista dos vértices de g ordenados topologicamente,
 //      ou NULL se g não é um grafo direcionado ou se tem circuito direcionado
-
+// Aparentemente não traz a ordem totalmente correta
 lista ordena(grafo g);
 
 //------------------------------------------------------------------------------
