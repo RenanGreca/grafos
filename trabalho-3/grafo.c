@@ -649,9 +649,6 @@ lista componentes(grafo g) {
         printf("Nome l: %s\n", ((grafo) ((no) l->n)->conteudo)->nome);
     }
 
-    free(marcas_v);
-    free(marcas_a);
-
     return l;
 }
 
@@ -741,11 +738,6 @@ lista blocos(grafo g) {
     n->conteudo = g;
     l->n = n;
     l->tam++;
-
-    free(corte);
-    free(visitado);
-    free(profundidade);
-    free(lowpoint);
 
     return l;
 }
